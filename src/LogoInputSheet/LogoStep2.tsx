@@ -60,14 +60,14 @@ const Step2Component = () => {
 	const [filename, setFileName] = useState('Select OLR File');
 	const [selectedWareHouse, setSelectedWarehouse] = useState<any>('');
 	const [selectedWareHouseForLine, setSelectedWarehouseForLine] = useState<any>('');
+	const [selectedPackMethodForLine, setSelectedPackMethodForLine] = useState<any>('');
 	const [selectedMerchandiser, setselectedMerchandiser] = useState<any>('');
 	const [selectedPlanner, setselectedPlanner] = useState<any>('');
 	const [selectedBuyerDivisions, setBuyerDivisions] = useState<any>('');
 	const [selectedLeadFactories, setselectedLeadFactory] = useState<any>('');
 	const [selectedGarmentCompositions, setGarmentCompositions] = useState<any>('');
-	const [selectedStyleData, setSelectedStyleData] = useState<any>({
-		newLines: [],
-	});
+	const [selectedStyleData, setSelectedStyleData] = useState<any>({newLines: [],});
+	const [upOLRDATASET, setupOLRDATASET] = useState<any>([]);
 	const [requestDelDate, setrequestDelDate] = useState('');
 	const [selectedSeasonCode, setselectedSeasonCode] = useState<any>('');
 	const [selectedYearCode, setselectedYearCode] = useState<any>('');
@@ -79,11 +79,12 @@ const Step2Component = () => {
 	const [threadData, setThreadData] = useState<any>([]);
 	const [openPackingModal, setOpenPackingModal] = useState<boolean>(false);
 	const [packingStatus, setPackingStatus] = useState<boolean>(false);
-	const [view1, setview1] = useState<any>('');
 	const COColors: any[] = [];
 
 	const handleClose = () => setOpenPackingModal(false);
 	const handlePacking = () => setOpenPackingModal(true);
+
+	const [uniq_linekey, setuniq_linekey] = useState<any>('');
 
 	const changeMerchandiser = (id) => setselectedMerchandiser(id);
 	const changePlanner = (id) => setselectedPlanner(id);
@@ -104,6 +105,11 @@ const Step2Component = () => {
 	const onWareHouseChangeForLine = (id: number) => {
 		//id == 1 ? setselectedLeadFactory(1) : setselectedLeadFactory(2);
 		setSelectedWarehouseForLine(id);
+	};
+
+	const onPackMethodChangeForLine = (id: string) => {
+		//id == 1 ? setselectedLeadFactory(1) : setselectedLeadFactory(2);
+		setSelectedPackMethodForLine(id);
 	};
 
 	//read OLR file
@@ -137,39 +143,25 @@ const Step2Component = () => {
 
 				sheetData.forEach((line: any) => {
 					let obj: any = {};
+
 					for (let i in headerRow) {
 						obj[headerRow[i]] = line[i];
 					}
 
-
-
 					if (obj.TECHPACKNO.toString().includes(pinkInputSheetContext.style)) {
+						
 						//Not usefull
-						if (
-							!isNaN(obj[ecvisionHeaderNames.SHIPDATE]) &&
-							obj[ecvisionHeaderNames.SHIPDATE] != ''
-						) {
-							obj[ecvisionHeaderNames.SHIPDATE] =
-								convertExcelDateToJsLocaleDateString(
-									obj[ecvisionHeaderNames.SHIPDATE]
-								);
+						if (!isNaN(obj[ecvisionHeaderNames.SHIPDATE]) && obj[ecvisionHeaderNames.SHIPDATE] !== '') {
+							obj[ecvisionHeaderNames.SHIPDATE] = convertExcelDateToJsLocaleDateString( obj[ecvisionHeaderNames.SHIPDATE]);
 						}
-						obj[ecvisionHeaderNames.SHIPDATE] = new Date(
-							obj[ecvisionHeaderNames.SHIPDATE]
-						);//.getTime();
 
-						if (
-							!isNaN(obj[ecvisionHeaderNames.NDCDATE]) &&
-							obj[ecvisionHeaderNames.NDCDATE] != ''
-						) {
-							obj[ecvisionHeaderNames.NDCDATE] =
-								convertExcelDateToJsLocaleDateString(
-									obj[ecvisionHeaderNames.NDCDATE]
-								);
+						obj[ecvisionHeaderNames.SHIPDATE] = new Date(obj[ecvisionHeaderNames.SHIPDATE]);
+
+						if (!isNaN(obj[ecvisionHeaderNames.NDCDATE]) && obj[ecvisionHeaderNames.NDCDATE] !== '') {
+							obj[ecvisionHeaderNames.NDCDATE] = convertExcelDateToJsLocaleDateString(obj[ecvisionHeaderNames.NDCDATE]);
 						}
-						obj[ecvisionHeaderNames.NDCDATE] = new Date(
-							obj[ecvisionHeaderNames.NDCDATE]
-						);
+
+						obj[ecvisionHeaderNames.NDCDATE] = new Date(obj[ecvisionHeaderNames.NDCDATE]);
 
 						sheetStyles.push(obj);
 					}
@@ -178,22 +170,9 @@ const Step2Component = () => {
 				
 
 				if (sheetStyles.length > 0) {
-					// const shipDates = sheetStyles
-					// 	.filter((l) => l[ecvisionHeaderNames.SHIPDATE])
-					// 	.map((l) => l[ecvisionHeaderNames.SHIPDATE]);
-					// let uniqueShipDates = [...new Set([...shipDates])];
-					// uniqueShipDates.sort(function (a, b) {
-					// 	return a - b;
-					// });
-					// uniqueShipDates.reverse();
-					// const shipDateFilteredStylesData = sheetStyles.filter(
-					// 	(l) => l[ecvisionHeaderNames.SHIPDATE] == uniqueShipDates[0]
-					// );
-
+					
 					//Get season based on season code (OLR)
-					const seasonName = getSeasonPink(
-						sheetStyles[0][ecvisionHeaderNames.SEASON]
-					);
+					const seasonName = getSeasonPink(sheetStyles[0][ecvisionHeaderNames.SEASON]);
 
 					let uniqueStylesWithData = {
 						styleNo: pinkInputSheetContext.style,
@@ -219,7 +198,9 @@ const Step2Component = () => {
 						sheetStyles[0][ecvisionHeaderNames.GENERICNO]
 					);
 					changeSelectedStyleNo(uniqueStylesWithData);
-					setview1(JSON.stringify(sheetStyles.length));
+
+					
+					
 				} else {
 					alert('No Style ' + pinkInputSheetContext.style);
 				}
@@ -227,13 +208,17 @@ const Step2Component = () => {
 				alert('No Sheet named OrderListReport');
 			}
 		};
+
 		if (rABS) reader.readAsBinaryString(files[0]);
 		else reader.readAsArrayBuffer(files[0]);
+
+		
 	};
 
 	const onStyleLineChangeClick = async (masterColorKey) => {
 		// setShowStyle(false);
 		setOpenPackingModal(true);
+		setuniq_linekey(masterColorKey);
 		//alert(masterColorKey);
 		const wareHouse = wareHouses.find((w) => w.id == selectedWareHouse);
 		if (selectedStyleData) {
@@ -245,6 +230,64 @@ const Step2Component = () => {
 			setSelectedStyleData(selectedStyleData);
 			// setShowStyle(true);
 		}
+	};
+
+	const onUpdatewarehouse = async () => {
+		
+		if(uniq_linekey.length > 0)
+		{
+			const wareHouse = await getWarehousesDetail(selectedWareHouseForLine);
+
+			const relevantLine = selectedStyleData.newLines.find(
+				(l) => l.masterColorKey === uniq_linekey
+			);
+
+			relevantLine.wareHouse = wareHouse ? wareHouse[0].name : '';
+			setSelectedStyleData(selectedStyleData);
+
+			const relevantLine_olr = upOLRDATASET.newLines.find(
+				(l) => l.masterColorKey === uniq_linekey
+			);
+
+			relevantLine_olr.wareHouse = wareHouse ? wareHouse[0].name : '';
+
+			setOpenPackingModal(false);
+		}
+		else
+		{
+			
+			alert('Please Select warehouse and data.');
+		}
+
+	};
+
+	const onUpdatePackMethod = async () => {
+		
+		if(uniq_linekey.length > 0)
+		{
+			const packmethod = selectedPackMethodForLine;
+
+			const relevantLine = selectedStyleData.newLines.find(
+				(l) => l.masterColorKey === uniq_linekey
+			);
+
+			relevantLine.packMethod = packmethod ? packmethod : '';
+			setSelectedStyleData(selectedStyleData);
+
+			const relevantLine_olr = upOLRDATASET.newLines.find(
+				(l) => l.masterColorKey === uniq_linekey
+			);
+
+			relevantLine_olr.packMethod = packmethod ? packmethod : '';
+
+			setOpenPackingModal(false);
+		}
+		else
+		{
+			
+			alert('Please Select Pack Method and data.');
+		}
+
 	};
 
 	const changeSelectedStyleNo = (selectedStylesData: any) => {
@@ -270,26 +313,8 @@ const Step2Component = () => {
 						l[ecvisionHeaderNames.MASTCOLORCODE] + l[ecvisionHeaderNames.VPONO] + l[ecvisionHeaderNames.SHIPDATE].getTime() ==
 						code
 				);
-
-				// let tempXs, tempSmall, tempMed, tempLar, tempXl;
-				// selectedColorLines.forEach((l) => {
-				// 	const tempSize = l[ecvisionHeaderNames.MASTSIZEDESC]
-				// 		.toUpperCase()
-				// 		.trim();
-				// 	if (tempSize.includes(ecvisionHeaderNames.XS)) {
-				// 		tempXs = l[ecvisionHeaderNames.ORDERQTY];
-				// 	} else if (tempSize.includes(ecvisionHeaderNames.SMALL)) {
-				// 		tempSmall = l[ecvisionHeaderNames.ORDERQTY];
-				// 	} else if (tempSize.includes(ecvisionHeaderNames.MED)) {
-				// 		tempMed = l[ecvisionHeaderNames.ORDERQTY];
-				// 	} else if (tempSize.includes(ecvisionHeaderNames.LARGE)) {
-				// 		tempLar = l[ecvisionHeaderNames.ORDERQTY];
-				// 	} else if (tempSize.includes(ecvisionHeaderNames.XL)) {
-				// 		tempXl = l[ecvisionHeaderNames.ORDERQTY];
-				// 	}
-				// });
-
-				let tempXXS, tempXS, tempS, tempM, tempL, tempXL, tempXXL;
+ 
+				let tempXXS, tempXS, tempS, tempM, tempL, tempXL, tempXXL, tempXXXL, tempSMALL, tempMED, tempLARGE;
 				selectedColorLines.forEach((l) => {
 					const tempSize = l[ecvisionHeaderNames.MASTSIZEDESC]
 						.toUpperCase()
@@ -298,16 +323,24 @@ const Step2Component = () => {
 						tempXXS = l[ecvisionHeaderNames.ORDERQTY];
 					} else if (tempSize.includes('XS')) {
 						tempXS = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.includes('SMALL')) {
+					} else if (tempSize.includes('S')) {
 						tempS = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.includes('MED')) {
+					} else if (tempSize.includes('M')) {
 						tempM = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.includes('L')) {
+						tempL = l[ecvisionHeaderNames.ORDERQTY];
 					} else if (tempSize.includes('XL')) {
 						tempXL = l[ecvisionHeaderNames.ORDERQTY];
 					} else if (tempSize.includes('XXL')) {
 						tempXXL = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.includes('XXXL')) {
+						tempXXXL = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.includes('SMALL')) {
+						tempSMALL = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.includes('MED')) {
+						tempMED = l[ecvisionHeaderNames.ORDERQTY];
 					} else if (tempSize.includes('LARGE')) {
-						tempL = l[ecvisionHeaderNames.ORDERQTY];
+						tempLARGE = l[ecvisionHeaderNames.ORDERQTY];
 					}
 				});
 
@@ -318,6 +351,10 @@ const Step2Component = () => {
 				const L = tempL > 0 ? tempL : 0;
 				const XL = tempXL > 0 ? tempXL : 0;
 				const XXL = tempXXL > 0 ? tempXXL : 0;
+				const XXXL = tempXXXL > 0 ? tempXXXL : 0;
+				const SMALL = tempSMALL > 0 ? tempSMALL : 0;
+				const MED = tempMED > 0 ? tempMED : 0;
+				const LARGE = tempLARGE > 0 ? tempLARGE : 0;
 
 				const lineToBeCreated = {
 					masterColorKey: code,
@@ -327,12 +364,9 @@ const Step2Component = () => {
 					NDCDATE: selectedColorLines[0][ecvisionHeaderNames.NDCDATE],
 					VPONO: selectedColorLines[0][ecvisionHeaderNames.VPONO],
 					CPO: selectedColorLines[0][ecvisionHeaderNames.CPO],
-					MASTCOLORCODE:
-						selectedColorLines[0][ecvisionHeaderNames.MASTCOLORCODE],
-					MASTCOLORDESC:
-						selectedColorLines[0][ecvisionHeaderNames.MASTCOLORDESC],
-					CUSTCOLORCODE:
-						selectedColorLines[0][ecvisionHeaderNames.CUSTCOLORCODE],
+					MASTCOLORCODE: selectedColorLines[0][ecvisionHeaderNames.MASTCOLORCODE],
+					MASTCOLORDESC: selectedColorLines[0][ecvisionHeaderNames.MASTCOLORDESC],
+					CUSTCOLORCODE: selectedColorLines[0][ecvisionHeaderNames.CUSTCOLORCODE],
 					CUSTSTYLE: selectedColorLines[0].CUSTSTYLE,
 					CUSTSTYLEDESC: selectedColorLines[0].CUSTSTYLEDESC,
 					XXS,
@@ -342,20 +376,17 @@ const Step2Component = () => {
 					L,
 					XL,
 					XXL,
-					TOTALQTY:
-						parseInt(XXS) +
-						parseInt(XS) +
-						parseInt(S) +
-						parseInt(M) +
-						parseInt(L) +
-						parseInt(XL) +
-						parseInt(XXL),
+					XXXL,
+					SMALL,
+					MED,
+					LARGE,
+					TOTALQTY: parseInt(XXS) + parseInt(XS) + parseInt(S) + parseInt(M) + parseInt(L) + parseInt(XL) + parseInt(XXL) + parseInt(XXXL) + parseInt(SMALL) + parseInt(MED) + parseInt(LARGE),
 					DIVISIONCODE: selectedColorLines[0][ecvisionHeaderNames.DIVISIONCODE],
 					MASTSIZEDESC: selectedColorLines[0][ecvisionHeaderNames.MASTSIZEDESC],
 					FACTORYCOST: selectedColorLines[0][ecvisionHeaderNames.FACTORYCOST],
 					MIDDLEMANCHARGES: selectedColorLines[0][ecvisionHeaderNames.MIDDLEMANCHARGES],
 				};
-
+				
 				if(lineToBeCreated.TOTALQTY>0){
 					selectedStylesData.newLines.push(lineToBeCreated);
 				}
@@ -403,6 +434,7 @@ const Step2Component = () => {
 				line.PCDDate = calculateDate(line[ecvisionHeaderNames.SHIPDATE]);
 			});
 			setSelectedStyleData({ ...selectedStylesData });
+			setupOLRDATASET({ ...selectedStylesData });
 			// setShowStyle(true);
 		}
 	};
@@ -439,20 +471,53 @@ const Step2Component = () => {
 			});
 			setSelectedStyleData(cselectedStyleData);
 
+			let olr_cselectedStyleData = upOLRDATASET.newLines;
+
+			upOLRDATASET.newLines.forEach((line_olr) => {
+				line_olr.wareHouse = wareHouse[0].name;
+			});
+
+			upOLRDATASET.newLines = olr_cselectedStyleData;
+
+			alert('All Rows updated.');
+
 	};
 
 	const onAddDelDateClicked = async () => {
+
+		if(requestDelDate.length === 0)
+		{
+			alert('Please Select Date?');
+			return;
+		}
+
 		let cselectedStyleData = { ...selectedStyleData };
 		cselectedStyleData.newLines.forEach((line) => {
 			line.requestDelDate = requestDelDate;
 		});
 		setSelectedStyleData(cselectedStyleData);
+		
+		let olr_cselectedStyleData = upOLRDATASET.newLines;
+
+			upOLRDATASET.newLines.forEach((line_olr) => {
+				line_olr.requestDelDate = requestDelDate;
+			});
+
+			upOLRDATASET.newLines = olr_cselectedStyleData;
+
+			alert('All Rows updated.');
 	};
 
 
 
 	//When click download button Code execute from here
 	const onInputSheetDownload = async () => {
+
+		//alert(JSON.stringify(upOLRDATASET.newLines.length));
+		//alert(JSON.stringify(selectedStyleData.newLines.length));
+
+		selectedStyleData.newLines = upOLRDATASET.newLines;
+		
 
 		if(selectedMerchandiser.length === 0)
 		{
@@ -489,26 +554,6 @@ const Step2Component = () => {
 			alert('Please Select M3 Buyer Division?');
 			return;
 		}
- 
-		//Devon Comment This
-		/*const planner: any = vsInputSheetContext.planners.find(
-			(lin: any) => lin.id == selectedPlanner
-		);
-		const merchandiser: any = vsInputSheetContext.merchandisers.find(
-			(lin: any) => lin.id == selectedMerchandiser
-		);
-		const garmentComposition: any =
-			vsInputSheetContext.garmentCompositions.find(
-				(lin: any) => lin.id == selectedGarmentCompositions
-			);
-		
-		const leadFactory: any = vsInputSheetContext.leadFactories.find(
-			(prod: any) => prod.id == selectedLeadFactories
-		);*/
-
-		//const buyerDivision: any = vsInputSheetContext.buyerDivisions.find(
-			//(buy: any) => buy.id == selectedBuyerDivisions
-		//);
 
 		const buyerDevisionvalues = await getBuyerDivisionsDetail(selectedBuyerDivisions);
 		const buyerDivision = buyerDevisionvalues[0].code;
@@ -532,21 +577,9 @@ const Step2Component = () => {
 		const seasoncode = seasonalCodes.find((s) => s.id == selectedSeasonCode)?.name ?? '';
 		const yearcode = yearCodes.find((s) => s.id == selectedYearCode)?.name ?? '';
 
-		// const deliveryDates = selectedStyleData.newLines
-		// 	.filter((l) => l.requestDelDate)
-		// 	.map((l) => l.requestDelDate);
-		// let uniquedeliveryDates = [...new Set([...deliveryDates])];
-		// uniquedeliveryDates.sort();
+		
 		let newStyleno = '';
-		//let HeaderSeason='';
-		// This is used to create style number/ This is not used in BFF
-		// selectedStyleData.purchasingGroup.toString() === '361'
-		// 	? 'K'
-		// 	: selectedStyleData.purchasingGroup.toString() === '233'
-		// 	? 'P'
-		// 	: ''; 
-		// ---- added by Rushan -------//
-
+		
 		//BFF_LBRANDS_VS_WOMENS_SLEEP_VSD
 		newStyleno = buyerDevisionvalues[0].code;
 
@@ -574,16 +607,15 @@ const Step2Component = () => {
 		//Devon Comment Below Line
 		//newStyleno += (season + selectedStyleData.itemGroup.slice(-1));
 
-		
-
 		const selectedBuyerDivisionName: string = buyerDevisionvalues[0].name;
 		
 		const selectedInseamName: string = inseams.find(i => i.id === selectedInseam)?.name ?? '';
 		//alert(selectedStyleData.newLines.length);
 		//alert(selectedBuyerDivisionName);
 		//alert(JSON.stringify(selectedStyleData.newLines));
+		//selectedStyleData.newLines = selectedStyleData.newLines.filter(i => i.DIVISIONCODE === selectedBuyerDivisionName && i.MASTSIZEDESC.includes(selectedInseamName));
 		selectedStyleData.newLines = selectedStyleData.newLines.filter(i => i.DIVISIONCODE === selectedBuyerDivisionName && i.MASTSIZEDESC.includes(selectedInseamName));
-			
+		
 		// if selected packing type is Single, no nrrd to change the row information,
 		// else if selected packing type is 'Double', copy the individual VPO number with row and then add TOP and Bottom to the end of COlOR column.
 
@@ -614,23 +646,6 @@ const Step2Component = () => {
 			selectedStyleData.newLines = combinedArrays;
 		}
 
-
-		// ---- added by Rushan -------//
-
-		// if (seasoncode && yearcode) {
-		// 	if (pinkInputSheetContext.style.length < 6) {
-		// 		newStyleno +=
-		// 			pinkInputSheetContext.style + seasoncode.name + yearcode.name;
-		// 	} else {
-		// 		newStyleno +=
-		// 			pinkInputSheetContext.style.substring(1, 6) +
-		// 			seasoncode.name +
-		// 			yearcode.name;
-		// 	}
-		// } else {
-		// 	newStyleno += pinkInputSheetContext.style;
-		// }
-		//console.log(selectedStyleData)
 		
 		const wb = XLSX.utils.book_new();
 		let template = COTblData(
@@ -653,7 +668,7 @@ const Step2Component = () => {
 		//Loop through OLR lines
 		for (let i = 0; i < selectedStyleData.newLines.length; i++) {
 			const line = selectedStyleData.newLines[i];
-			alert(JSON.stringify(line));
+			
 			COColors.push(line.MASTCOLORCODE.toString().slice(-6));
 
 			//Get matching color from BOM Garment Color(last 4 chars) based on Color code(last 4 chars) in OLR
@@ -681,9 +696,9 @@ const Step2Component = () => {
 			);
 
 			//Get FOB based on Color (CO) from FOB List
-			const FOB = FOBList.find(
-				(item: any) => item.Garment.toUpperCase() === newColor.toUpperCase()
-			);
+			//const FOB = FOBList.find(
+				//(item: any) => item.Garment.toUpperCase() === newColor.toUpperCase()
+			//);
 
 			//Create CO Table lines
 			const rowToAdd = [
@@ -713,10 +728,15 @@ const Step2Component = () => {
 				line[ecvisionHeaderNames.L],
 				line[ecvisionHeaderNames.XL],
 				line[ecvisionHeaderNames.XXL],
+				line[ecvisionHeaderNames.XXXL],
+				line[ecvisionHeaderNames.SMALL],
+				line[ecvisionHeaderNames.MED],
+				line[ecvisionHeaderNames.LARGE],
 				''//CO
 			];
 			template.push(rowToAdd);
 			//alert(JSON.stringify(rowToAdd));
+			
 		}
 
 		// Change sizes postfix according to Inseam
@@ -755,6 +775,18 @@ const Step2Component = () => {
 		const xxlIndex = template[14].findIndex(i => i === 'XXL.');
 		if (xxlIndex > -1) template[14][xxlIndex] = 'XXL' + getinseamwithsize(selectedInseam);
 
+		const xxxlIndex = template[14].findIndex(i => i === 'XXXL.');
+		if (xxxlIndex > -1) template[14][xxxlIndex] = 'XXXL' + getinseamwithsize(selectedInseam);
+
+		const smallIndex = template[14].findIndex(i => i === 'SMALL.');
+		if (smallIndex > -1) template[14][smallIndex] = 'SMALL' + getinseamwithsize(selectedInseam);
+
+		const medIndex = template[14].findIndex(i => i === 'MED.');
+		if (medIndex > -1) template[14][medIndex] = 'MED' + getinseamwithsize(selectedInseam);
+
+		const longIndex = template[14].findIndex(i => i === 'LARGE.');
+		if (longIndex > -1) template[14][longIndex] = 'LARGE' + getinseamwithsize(selectedInseam);
+
 		//BOM removing colors not in CO and Thread lines & Dummy in PLM
 		const filteredBOM: any[] = pinkInputSheetContext.BOM.filter((row: any) => {
 			const prodGroup = row[1].toUpperCase().split('-');
@@ -776,6 +808,8 @@ const Step2Component = () => {
 			return row;
 		});
 
+		
+
 		//Add thread lines to the BOM
 		threadData.map((row: any) => filteredBOM.push(row));
 
@@ -793,6 +827,11 @@ const Step2Component = () => {
 		ws['!cols'] = wscols;
 		XLSX.utils.book_append_sheet(wb, ws, 'CO LINE');// changed StNDdize CO to CO Line 
 
+
+		for (var i = 0; i < 14; i++) {
+			filteredBOM.unshift(['']);
+		} 
+
 		//BOM sheet
 		const ws2 = XLSX.utils.aoa_to_sheet(filteredBOM);
 		XLSX.utils.book_append_sheet(wb, ws2, 'BOM LINE');// changed StNDdize BOM to BOM LINE 
@@ -803,6 +842,9 @@ const Step2Component = () => {
 		OpsTrackSheetFormat(ws3, opsToTrackData);
 
 		XLSX.writeFile(wb, 'VS Sleep Input Sheet.xlsx'); //PINk to VS Sleep
+	
+		selectedStyleData.newLines = upOLRDATASET.newLines;
+	
 	};
 
 	//On Thread sheet upload
@@ -870,7 +912,7 @@ const Step2Component = () => {
 	return (
 		<React.Fragment>
 			<Grid container direction='row' justify='space-evenly'>
-				<Grid item xs={3} style={{ marginTop: '0.5rem' }}>
+				<Grid item xs={6} style={{ marginTop: '0.5rem' }}>
 					<label
 						className='form-control'
 						style={{
@@ -890,7 +932,7 @@ const Step2Component = () => {
 						/>
 					</label>
 				</Grid>
-				<Grid item xs={4} style={{ marginLeft: '0.5rem', marginTop: '0.5rem' }}>
+				<Grid item xs={4} hidden={true} style={{ marginLeft: '0.5rem', marginTop: '0.5rem' }}>
 					<Grid container direction='row'>
 						<label
 							className='form-control'
@@ -1083,9 +1125,6 @@ const Step2Component = () => {
 				</div>
 			</div>
 
-			<div>
-				<p>{view1}</p>
-			</div>
 
 			<div style={{ marginTop: '2vw', marginRight: 10 }}>
 				<table className='table table-bordered table-sm'>
@@ -1172,20 +1211,34 @@ const Step2Component = () => {
 
 				<br/>
 
+				<Button
+					variant='contained'
+					color='secondary'
+					onClick={onUpdatewarehouse}
+				>
+					Update Warehouse
+				</Button>
+
+				<br/>
+				<br/>
+
 				<DropDownComponent 
 				fieldName='pack method' 
-				data={[{id:1,name:'pack Single 30'},{id:2,name:'30P-30 pcs per 1 poly bag'}]}
+				data={[{id:'pack Single 30',name:'pack Single 30'},{id:'30P-30 pcs per 1 poly bag',name:'30P-30 pcs per 1 poly bag'}]}
+				onSelectChange={onPackMethodChangeForLine}
+				selectedField={''}
 				/>
 
 				<br/>
 
 				<Button
-						variant='contained'
-						color='secondary'
-						onClick={handleClose}
-					>
-						Update
-					</Button>
+					variant='contained'
+					color='secondary'
+					onClick={onUpdatePackMethod}
+					
+				>
+					Update Pack Method
+				</Button>
 
 			</div>
 			</>

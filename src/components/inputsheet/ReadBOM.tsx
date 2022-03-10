@@ -145,9 +145,11 @@ function ReadBOM(props: any) {
 		console.log('reading Bom', selectedStyleId, selectedBOMId);
 
 		const res = await getBOMandColorData(selectedStyleId, selectedBOMId);
-		if (res.status == 200 || res.status == 201) {
-			const { bom, colorData } = await res.json();
+		if (res.status === 200 || res.status === 201) {
+			const { bom } = await res.json();
+			
 			if (bom.length > 0) {
+				
 				const newBOM = bom.map((line: any) => BOMData(line));
 				const headers = Object.keys(newBOM[0]).filter(
 					(key) => !['raw', 'updated_at'].includes(key)
@@ -160,18 +162,18 @@ function ReadBOM(props: any) {
 					/* Deveon Comment
 					newRow['Sourcing Merchant'] = getSourcingMerchLogo(
 						row['RM Product Group']
+					); 
+
+					newRow['SourcingMerchant *'] = getSourcingMerchLogo(
+						row['RMProcurementGroup']
 					); */
 
-					newRow['SourcingMerchant'] = getSourcingMerchLogo(
-						row['RM Product Group']
-					);
-
 					//Conversion of Yards to Meters
-					const skuUOM = row['SKU UOM'].trim().substring(0, 3);
+					const skuUOM = row['SKUUOM *'].trim().substring(0, 3);
 					if (skuUOM.toUpperCase() === 'YRD') {
 						newRow['Purchase UOM'] = 'MTR - Meters';
 						newRow['Conversion'] = (0.9144).toFixed(4);
-						newRow['Consumption'] = parseFloat(row['Consumption']) * 0.9144;
+						newRow['Consumption'] = parseFloat(row['YY *']) * 0.9144;
 						newRow['Costing price'] = (
 							parseFloat(row['Costing price']) / 0.9144
 						).toFixed(4);
@@ -184,7 +186,7 @@ function ReadBOM(props: any) {
 				});
 
 				const d = fullBOM.map((obj: any) => headers.map((key) => obj[key]));
-				const garmentcolors = fullBOM.map((line: any) => line['Garment Color']);
+				const garmentcolors = fullBOM.map((line: any) => line['GMTColor']);
 				const result = [headers, ...d];
 				inputSheetContext.changeBOM(result);
 				inputSheetContext.changecolorData(garmentcolors);

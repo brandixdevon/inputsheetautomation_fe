@@ -4,54 +4,43 @@ export const BOMData = (line) => {
 	return {
 		'NewLine':line['NewLine'],
 		'BOMCategory*': line['BOMCategory'],//changed from Main category
-		'RM Product Group': line['RMProcurementGroup'],
-		'Item Code': line['M3Item Code'],
-		'Item Name': line['ItemName'],
-		'Item Description': line['ItemDescription'],
-		'Brand Category': line['Brand Category'],
-		'Garment Z FTR': line['Garment Z FTR'],
-		'Garment Color': line['Garment Color'],
-		'Garment Size': line['Garment Size'],
-		'RM Z FTR': line['RM Z FTR'],
-		'RM Color': line['RM Color'],
-		'RM Size': line['RM Size'],
-		Consumption: line['Consumption'],
-		'Wastage%': line['Wastage%'],
-		'SKU UOM': line['SKU UOM'],
-		'Purchase UOM': line['Purchase UOM'],
-		Conversion: line['Conversion'],
-		'Costing price': line['Costing price'],
-		'Purchase price': line['Purchase price'],
-		'Hierarchy Level 1': line['Hierarchy Level 1'],
-		'Hierarchy Level 2': line['Hierarchy Level 2'],
-		'Hierarchy Level 3': line['Hierarchy Level 3'],
-		'Hierarchy Level 4': line['Hierarchy Level 4'],
-		'Hierarchy Level 5': line['Hierarchy Level 5'],
+		'RMProcurementGroup *': line['RMProcurementGroup'],
+		'M3Item Code': line['M3Item Code'],
+		'HierarchyLevel1': line['HierarchyLevel1'],
+		'HierarchyLevel2': line['HierarchyLevel2'],
+		'HierarchyLevel3': line['HierarchyLevel3'],
+		'HierarchyLevel4': line['HierarchyLevel4'],
+		'HierarchyLevel5': line['HierarchyLevel5'],
 		'RM Width': line['RM Width'],
-		Freight: line['Freight'],
-		TC: line['TC'],
-		MOQ: line['MOQ'],
-		ORDER_MULTIPLE: line['ORDER_MULTIPLE'],
-		Item_Horizon_for_Demand_Consolidation:
-			line['Item_Horizon_for_Demand_Consolidation'],
-		'Supplier Tolarance': line['Supplier Tolarance'],
-		Supplier: line['Supplier'],
-		'Manufacturing Lead Time': line['Manufacturing Lead Time'],
-		'Mode of Shipment': line['Mode of Shipment'],
-		'Delivery Terms': line['Delivery Terms'],
-		'Sourcing Merchant': line['Sourcing Merchant'],
-		'Supplier Nomination': line['Supplier Nomination'],
-		'Supplier Item_No': line['Supplier Item_No'],
-		'Inspection Required / Not Required':
-			line['Inspection Required / Not Required'],
-		Placement: line['Placement'],
-		'CO Quantity': line['CO Quantity'],
-		Color_Wise_CO_Qty: line['Color_Wise_CO_Qty'],
-		Usage: line['Usage'],
-		Requirement: line['Requirement'],
-		'Category Color': line['Category Color'],
-		'Cost $': line['Cost $'],
-		'Row No': line['Row No'],
+		'SupplierItemNo *': line['SupplierItemNo'],
+		'Comment': line['Comment'],
+		'ItemName *': line['ItemName'],
+		'ItemDescription *': line['ItemDescription'],
+		'BrandCategory *': line['Brand Category'],
+		'GMTColor': line['GMTColor'],
+		'GMTZOption': line['GMTZOption'],
+		'GMTSize': line['GMTSize'],
+		'RMZOption': line['RMZOption'],
+		'RMColor': line['RMColor'],
+		'RMSize': line['RMSize'],
+		'YY *': line['YY'],
+		'Wastage %*': line['Wastage %'],
+		'SupplierNominationStatus': line['SupplierNominationStatus'],
+		'SKUUOM *': line['SKU UOM'],
+		'PurchaseUOM *': line['Purchase UOM'],
+		'Conversion': line['Conversion'],
+		'PurchasePrice *': line['PurchasePrice'],
+		'Freight': line['Freight'],
+		'TC': line['TC'],
+		'MOQ': line['MOQ'],
+		'OrderMultiple': line['OrderMultiple'],
+		'TimeHorizon': line['TimeHorizon'],
+		'SupplierTolarance': line['SupplierTolarance'],
+		'Supplier': line['Supplier'],
+		'ManLeadTime *': line['ManLeadTime'],
+		'ModeOfShipment *': line['ModeOfShipment'],
+		'RMDeliveryTerm *': line['RMDeliveryTerm'],
+		'SourcingMerchant *': line['SourcingMerchant'],
 	};
 };
 
@@ -73,55 +62,18 @@ export const COTblData = (
 ) => {
 	const template = [
 		['Style Number', newStyleno],
-		// [
-		// 	'RM item Group',
-		// 	includeLogo
-		// 		? `LOGO${selectedStyleData.season}`
-		// 		: `PINK${selectedStyleData.itemGroup}`,
-		// ],
-		// [
-		// 	'GMT item Group',
-		// 	includeLogo
-		// 		? `LOGO${selectedStyleData.season}`
-		// 		: `PINK${selectedStyleData.itemGroup}`,
-		// ],
-
-		[	'VERSION ID','01'],
-
-		[
-			'Garment Item Description', selectedStyleData.MASTSTYLEDESC,
-			
-		
-		],
-		[
-			'Lead Factory', leadFactory,
-		],
+		['VERSION ID','01'],
+		['Garment Item Description', selectedStyleData.MASTSTYLEDESC,],
+		['Lead Factory', leadFactory,],
 		['Buyer', 'MAST INDUSTRIES INC-MAS00468'],
-		[
-			//'Buyer Division','BFF_LBRANDS_VS_WOMENS_SLEEP'
-			'Buyer Division', M3buyerDivision
-			//includeLogo ? buyerDivision : buyerDivision ? buyerDivision.name : '',
-		],
-
+		['Buyer Division', M3buyerDivision],
 		['Group Tech Class', grouptechclass],
-
-		[
-			'Season', season
-			// includeLogo
-			// 	? `${selectedStyleData.season}-${selectedStyleData.season}`
-			// 	: `${selectedStyleData.season}`,
-		],
+		['Season', season],
 		['Product Group', productGroup],
 		['Merchandiser', merchandiser],
 		['Planner', planner],
 		['Garment Fabric Composition',garmentComposition],
-		
 		['Style Categorization', 'RM PURCHASED FOR A CONFIRMED ORDER-O'],
-		
-		// ['Reff Id', ''],
-		// ['Product Line ', ''],
-		// ['Range', ''],
-		// ['Work-study Catagorization', ''],
 		[],
 		[
 			'NewLine',
@@ -138,13 +90,10 @@ export const COTblData = (
 			'CPONo *',
 			'DeliveryMethod *',
 			'SalesPrice*',
-			//'Cash Discount',
 			'DeliveryTerm *',
-			
 			'PackMethod *',
 			'ZOption *',// FTR to Option
 			'TotalQuantity',
-				
 			'XXS.',
 			'XS.',
 			'S.',
@@ -152,13 +101,11 @@ export const COTblData = (
 			'L.',
 			'XL.',
 			'XXL.',
-			
+			'XXXL.',
+			'SMALL.',
+			'MED.',
+			'LARGE.',
 			'CO Number',
-			// 'PO Type',
-			// 'Hierarchy ID',
-			// 'PCD Validation',
-			// 'Delivery Date Validation',
-			// 'Packing BOM',
 		],
 	];
 	return template;
