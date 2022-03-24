@@ -111,6 +111,76 @@ export const COTblData = (
 	return template;
 };
 
+export const COTblData_Aritzia = (
+	includeLogo,
+	newStyleno,
+	selectedStyleData,
+	leadFactory,
+	buyerDivision,
+	merchandiser,
+	planner,
+	garmentComposition,
+	M3buyerDivision,
+	productGroup,
+	season,
+	grouptechclass,
+	//HeaderSeason,
+
+) => {
+	const template = [
+		['Style Number', newStyleno],
+		['VERSION ID','01'],
+		['Garment Item Description', selectedStyleData.MASTSTYLEDESC,],
+		['Lead Factory', leadFactory,],
+		['Buyer', 'MAST INDUSTRIES INC-MAS00468'],
+		['Buyer Division', M3buyerDivision],
+		['Group Tech Class', grouptechclass],
+		['Season', season],
+		['Product Group', productGroup],
+		['Merchandiser', merchandiser],
+		['Planner', planner],
+		['Garment Fabric Composition',garmentComposition],
+		['Style Categorization', 'RM PURCHASED FOR A CONFIRMED ORDER-O'],
+		[],
+		[
+			'NewLine',
+			'ProductionWarehouse *',
+			'Destination *',
+			'RequestedDeliveryDateCustomer *',
+			'RequestedDeliveryDatePlanner *',
+			'FOB Date',
+			'NDC Date',
+			'PCD Date',
+			'Color *', //Added by Rushan
+			'CustomerStyleNo *',
+			'VPONo *',
+			'CPONo *',
+			'DeliveryMethod *',
+			'SalesPrice*',
+			'DeliveryTerm *',
+			'PackMethod *',
+			'ZOption *',// FTR to Option
+			'TotalQuantity',
+			selectedStyleData.sizeheaders.size1,
+			selectedStyleData.sizeheaders.size2,
+			selectedStyleData.sizeheaders.size3,
+			selectedStyleData.sizeheaders.size4,
+			selectedStyleData.sizeheaders.size5,
+			selectedStyleData.sizeheaders.size6,
+			selectedStyleData.sizeheaders.size7,
+			selectedStyleData.sizeheaders.size8,
+			selectedStyleData.sizeheaders.size9,
+			selectedStyleData.sizeheaders.size10,
+			selectedStyleData.sizeheaders.size11,
+			selectedStyleData.sizeheaders.size12,
+			selectedStyleData.sizeheaders.size13,
+			selectedStyleData.sizeheaders.size14,
+			'CO Number',
+		],
+	];
+	return template;
+};
+
 export const operationtable = [
 	['SMV', 'Color'],
 	['', 'Facility'],

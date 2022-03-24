@@ -27,6 +27,20 @@ export const getZFtrPink = (shipToName: string) => {
 	}
 };
 
+export const getShiptoAritzia = (shipToName: string) => {
+	
+	if (shipToName) {
+		return shipToName === 'DC01'
+			? 'CAN01'
+			: shipToName === 'DC03'
+			? 'CAN02'
+			: shipToName === 'DV05'
+			? 'US01'
+			: '';
+	}
+};
+
+
 export const getSeasonPink = (seasonCode: string) => {
 	if (seasonCode) {
 		const code = seasonCode.slice(0, 2);
@@ -40,6 +54,23 @@ export const getSeasonPink = (seasonCode: string) => {
 			? `${seasonCode.toUpperCase()}-HOLIDAY ${year}`
 			: code.toUpperCase() === 'FL'
 			? `${seasonCode.toUpperCase()}-FALL ${year}`
+			: '';
+	}
+};
+
+export const getSeasonAritzia = (seasonCode: string) => {
+	if (seasonCode) {
+		const code = seasonCode.substr(seasonCode.length - 5);;
+		const year = seasonCode.substr(seasonCode.length - 2);
+
+		return code.includes('SU') === true
+			? `SUMMER ${year}-SU${year}`
+			: code.includes('SP') === true
+			? `SPRING ${year}-SP${year}`
+			: code.includes('FA') === true
+			? `FALL ${year}-FA${year}`
+			: code.includes('WIN') === true
+			? `WINTER ${year}-WIN${year}`
 			: '';
 	}
 };

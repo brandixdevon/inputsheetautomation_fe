@@ -1,4 +1,5 @@
-import React, { useState, useContext } from 'react';
+//VS Pink View
+import React, { useState, useContext, useEffect } from 'react';
 import PinkInputSheetContext from '../context/pinkContext';
 import VsInputSheetContext from '../context/vsInputSheetContext';
 import {
@@ -12,19 +13,29 @@ import DropDownComponent from '../components/layout/dropdownComponent';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
 import XLSX from 'xlsx';
 import {
-	divisionCodespink as divisionCodes,
-	leadFactories,
-	garmentCompositionPink,
 	inseams,
 	packingTypes,
 	seasonalCodes,
-	wareHouses,
 	yearCodes,
-	pinkmerchandisers,
-	planners,
-	M3buyerDivisionsPink as M3buyerDivisions
 } from '../Services/datasets/pink.d';
-import { addSMV, getRmColorThread, getSMV } from '../Services/data';
+import { 
+	getMerchandiser,
+	getPlanners,
+	getBuyerDivisions,
+	getLeadFactories,
+	getGarmentCompositions,
+	getWarehouses,
+	getM3BuyerDivisions,
+	addSMV, 
+	getRmColorThread, 
+	getSMV,
+	getM3BuyerDivisionDetail, 
+	getBuyerDivisionsDetail, 
+	getPlannersDetail,
+	getMerchandiserDetail,
+	getGarmentCompositionsDetail,
+	getLeadFactoriesDetail,
+	getWarehousesDetail } from '../Services/data';
 import ecvisionHeaderNames from '../Services/datasets/ecvisionNames';
 import { wscols } from '../inputSheetTemplate';
 import { COTblData, operationtable } from '../Services/datasets/common.d';
@@ -42,26 +53,28 @@ import { getBOMThreadLinesLogo, getThreadLines } from '../Services/threadsheet';
 import { OpsTrackSheetFormat } from '../Services/formatExcel';
 
 const Step2Componentv2 = () => {
-	// const [isFileUploaded, setIsFileUploaded] = useState(false);
-	// const [isFileReading, setisFileReading] = useState(false);
-	// const [stylesData, setStylesData] = useState([]);
-	// const [selectedStyle, setSelectedStyle] = useState('');
-	// const [showStyle, setShowStyle] = useState(false);
-	// const [pinkGarmentCompositions, setpinkGarmentCompositions] = useState([]);
-	// const [downloadBtnStatus, setdownloadBtnStatus] = useState(false);
+	
+	const [merchandisers, setMerchandisers] = useState([]);
+	const [planners, setplanners] = useState([]);
+	const [buyerDivisions, setbuyerDivisions] = useState([]);
+	const [leadFactories, setleadFactories] = useState([]);
+	const [garmentCompositions, setgarmentCompositions] = useState([]);
+	const [warehouses, setwarehouses] = useState([]);
+	const [m3buyerDivisions, setm3buyerDivisions] = useState([]);
 
 	const pinkInputSheetContext = useContext(PinkInputSheetContext);
 	const vsInputSheetContext = useContext(VsInputSheetContext);
 	const [filename, setFileName] = useState('Select OLR File');
-	const [selectedWareHouse, setSelectedWarehouse] = useState<any>('');
+	const [selectedWareHouse, setSelectedWarehouse] = useState<any>('');	
+	const [selectedWareHouseForLine, setSelectedWarehouseForLine] = useState<any>('');
+	const [selectedPackMethodForLine, setSelectedPackMethodForLine] = useState<any>('');
 	const [selectedMerchandiser, setselectedMerchandiser] = useState<any>('');
 	const [selectedPlanner, setselectedPlanner] = useState<any>('');
 	const [selectedBuyerDivisions, setBuyerDivisions] = useState<any>('');
 	const [selectedLeadFactories, setselectedLeadFactory] = useState<any>('');
 	const [selectedGarmentCompositions, setGarmentCompositions] = useState<any>('');
-	const [selectedStyleData, setSelectedStyleData] = useState<any>({
-		newLines: [],
-	});
+	const [selectedStyleData, setSelectedStyleData] = useState<any>({newLines: [],});
+	const [upOLRDATASET, setupOLRDATASET] = useState<any>([]);
 	const [requestDelDate, setrequestDelDate] = useState('');
 	const [selectedSeasonCode, setselectedSeasonCode] = useState<any>('');
 	const [selectedYearCode, setselectedYearCode] = useState<any>('');
@@ -72,11 +85,10 @@ const Step2Componentv2 = () => {
 	const [threadFileName, setthreadFileName] = useState<any>('Upload Thread YY');
 	const [threadData, setThreadData] = useState<any>([]);
 	const [openPackingModal, setOpenPackingModal] = useState<boolean>(false);
-	const [packingStatus, setPackingStatus] = useState<boolean>(false);
 	const COColors: any[] = [];
 
 	const handleClose = () => setOpenPackingModal(false);
-	const handlePacking = () => setOpenPackingModal(true);
+	const [uniq_linekey, setuniq_linekey] = useState<any>('');
 
 	const changeMerchandiser = (id) => setselectedMerchandiser(id);
 	const changePlanner = (id) => setselectedPlanner(id);
@@ -89,9 +101,46 @@ const Step2Componentv2 = () => {
 	const changeInseam = (id) => setselectedInseam(id);
 	const changePackingType = (id) => setSelectedPackingType(id);
 
+	useEffect(() => {
+		async function fetchData() {
+			const merchandisers = await getMerchandiser('PINK');
+			setMerchandisers(merchandisers);
+			
+			const planners = await getPlanners('PINK');
+			setplanners(planners);
+			
+			const buyerDivisions = await getBuyerDivisions('PINK');
+			setbuyerDivisions(buyerDivisions);
+
+			const leadFactories = await getLeadFactories();
+			setleadFactories(leadFactories);
+
+			const garmentCompositions = await getGarmentCompositions('PINK');
+			setgarmentCompositions(garmentCompositions);
+
+			const warehouses = await getWarehouses('PINK');
+			setwarehouses(warehouses);
+
+			const m3buyerDivisions = await getM3BuyerDivisions('PINK');
+			setm3buyerDivisions(m3buyerDivisions);
+
+		}
+		fetchData();
+	}, []);
+
 	const onWareHouseChange = (id: number) => {
 		//id == 1 ? setselectedLeadFactory(1) : setselectedLeadFactory(2);
 		setSelectedWarehouse(id);
+	};
+
+	const onWareHouseChangeForLine = (id: number) => {
+		//id == 1 ? setselectedLeadFactory(1) : setselectedLeadFactory(2);
+		setSelectedWarehouseForLine(id);
+	};
+
+	const onPackMethodChangeForLine = (id: string) => {
+		//id == 1 ? setselectedLeadFactory(1) : setselectedLeadFactory(2);
+		setSelectedPackMethodForLine(id);
 	};
 
 	//read OLR file
@@ -218,17 +267,97 @@ const Step2Componentv2 = () => {
 
 	const onStyleLineChangeClick = async (masterColorKey) => {
 		// setShowStyle(false);
+		setOpenPackingModal(true);
+		setuniq_linekey(masterColorKey);
+	};
 
-		const wareHouse = wareHouses.find((w) => w.id == selectedWareHouse);
-		if (selectedStyleData) {
+	const onUpdatewarehouse = async () => {
+		
+		if(uniq_linekey.length > 0)
+		{
+			const wareHouse = await getWarehousesDetail(selectedWareHouseForLine);
+ 
 			const relevantLine = selectedStyleData.newLines.find(
-				(l) => l.masterColorKey == masterColorKey
+				(l) => l.masterColorKey === uniq_linekey
 			);
-			relevantLine.requestDelDate = requestDelDate;
-			relevantLine.wareHouse = wareHouse ? wareHouse.name : '';
+
+			relevantLine.wareHouse = wareHouse ? wareHouse[0].name : '';
+			
 			setSelectedStyleData(selectedStyleData);
-			// setShowStyle(true);
+
+			const relevantLine_olr = upOLRDATASET.newLines.find(
+				(l) => l.masterColorKey === uniq_linekey
+			);
+
+			relevantLine_olr.wareHouse = wareHouse ? wareHouse[0].name : '';
+
+			setupOLRDATASET(upOLRDATASET);
+
+			setOpenPackingModal(false);
 		}
+		else
+		{
+			alert('Please Select warehouse and data.');
+		}
+
+	};
+
+	const onUpdatePackMethod = async () => {
+		
+		if(uniq_linekey.length > 0)
+		{
+			const packmethod = selectedPackMethodForLine;
+			 
+			const relevantLine = selectedStyleData.newLines.find(
+				(l) => l.masterColorKey === uniq_linekey
+			);
+
+			
+			relevantLine.packMethod = packmethod ? packmethod : '';
+			setSelectedStyleData(selectedStyleData);
+
+			const relevantLine_olr = upOLRDATASET.newLines.find(
+				(l) => l.masterColorKey === uniq_linekey
+			);
+
+			relevantLine_olr.packMethod = packmethod ? packmethod : '';
+
+			setupOLRDATASET(upOLRDATASET);
+
+			setOpenPackingModal(false);
+		}
+		else
+		{
+			alert('Please Select Pack Method and data.');
+		}
+
+	};
+
+	const onUpdateDelDateCustomerClicked = async () => {
+		if(requestDelDate.length === 0)
+		{
+			alert('Please Select Date?');
+			return;
+		}
+
+		const relevantLine = selectedStyleData.newLines.find(
+			(l) => l.masterColorKey === uniq_linekey
+		);
+
+		relevantLine.requestDelDate = requestDelDate;
+		setSelectedStyleData(selectedStyleData);
+
+		const relevantLine_olr = upOLRDATASET.newLines.find(
+			(l) => l.masterColorKey === uniq_linekey
+		);
+
+		relevantLine_olr.requestDelDate = requestDelDate;
+
+		setupOLRDATASET(upOLRDATASET);
+
+		
+		setOpenPackingModal(false);
+
 	};
 
 	const changeSelectedStyleNo = (selectedStylesData: any) => {
@@ -255,25 +384,7 @@ const Step2Componentv2 = () => {
 						code
 				);
 
-				// let tempXs, tempSmall, tempMed, tempLar, tempXl;
-				// selectedColorLines.forEach((l) => {
-				// 	const tempSize = l[ecvisionHeaderNames.MASTSIZEDESC]
-				// 		.toUpperCase()
-				// 		.trim();
-				// 	if (tempSize.includes(ecvisionHeaderNames.XS)) {
-				// 		tempXs = l[ecvisionHeaderNames.ORDERQTY];
-				// 	} else if (tempSize.includes(ecvisionHeaderNames.SMALL)) {
-				// 		tempSmall = l[ecvisionHeaderNames.ORDERQTY];
-				// 	} else if (tempSize.includes(ecvisionHeaderNames.MED)) {
-				// 		tempMed = l[ecvisionHeaderNames.ORDERQTY];
-				// 	} else if (tempSize.includes(ecvisionHeaderNames.LARGE)) {
-				// 		tempLar = l[ecvisionHeaderNames.ORDERQTY];
-				// 	} else if (tempSize.includes(ecvisionHeaderNames.XL)) {
-				// 		tempXl = l[ecvisionHeaderNames.ORDERQTY];
-				// 	}
-				// });
-
-				let tempXXS, tempXS, tempS, tempM, tempL, tempXL, tempXXL;
+				let tempXXS, tempXS, tempS, tempM, tempL, tempXL, tempXXL, tempXXXL, tempSMALL, tempMED, tempLARGE;
 				selectedColorLines.forEach((l) => {
 					const tempSize = l[ecvisionHeaderNames.MASTSIZEDESC]
 						.toUpperCase()
@@ -282,16 +393,24 @@ const Step2Componentv2 = () => {
 						tempXXS = l[ecvisionHeaderNames.ORDERQTY];
 					} else if (tempSize.includes('XS')) {
 						tempXS = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.includes('SMALL')) {
+					} else if (tempSize.includes('S')) {
 						tempS = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.includes('MED')) {
+					} else if (tempSize.includes('M')) {
 						tempM = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.includes('L')) {
+						tempL = l[ecvisionHeaderNames.ORDERQTY];
 					} else if (tempSize.includes('XL')) {
 						tempXL = l[ecvisionHeaderNames.ORDERQTY];
 					} else if (tempSize.includes('XXL')) {
 						tempXXL = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.includes('XXXL')) {
+						tempXXXL = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.includes('SMALL')) {
+						tempSMALL = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.includes('MED')) {
+						tempMED = l[ecvisionHeaderNames.ORDERQTY];
 					} else if (tempSize.includes('LARGE')) {
-						tempL = l[ecvisionHeaderNames.ORDERQTY];
+						tempLARGE = l[ecvisionHeaderNames.ORDERQTY];
 					}
 				});
 
@@ -302,6 +421,10 @@ const Step2Componentv2 = () => {
 				const L = tempL > 0 ? tempL : 0;
 				const XL = tempXL > 0 ? tempXL : 0;
 				const XXL = tempXXL > 0 ? tempXXL : 0;
+				const XXXL = tempXXXL > 0 ? tempXXXL : 0;
+				const SMALL = tempSMALL > 0 ? tempSMALL : 0;
+				const MED = tempMED > 0 ? tempMED : 0;
+				const LARGE = tempLARGE > 0 ? tempLARGE : 0;
 
 				const lineToBeCreated = {
 					masterColorKey: code,
@@ -326,14 +449,11 @@ const Step2Componentv2 = () => {
 					L,
 					XL,
 					XXL,
-					TOTALQTY:
-						parseInt(XXS) +
-						parseInt(XS) +
-						parseInt(S) +
-						parseInt(M) +
-						parseInt(L) +
-						parseInt(XL) +
-						parseInt(XXL),
+					XXXL,
+					SMALL,
+					MED,
+					LARGE,
+					TOTALQTY: parseInt(XXS) + parseInt(XS) + parseInt(S) + parseInt(M) + parseInt(L) + parseInt(XL) + parseInt(XXL) + parseInt(XXXL) + parseInt(SMALL) + parseInt(MED) + parseInt(LARGE),
 					DIVISIONCODE: selectedColorLines[0][ecvisionHeaderNames.DIVISIONCODE],
 					MASTSIZEDESC: selectedColorLines[0][ecvisionHeaderNames.MASTSIZEDESC],
 					FACTORYCOST: selectedColorLines[0][ecvisionHeaderNames.FACTORYCOST],
@@ -386,6 +506,7 @@ const Step2Componentv2 = () => {
 				line.PCDDate = calculateDate(line[ecvisionHeaderNames.SHIPDATE]);
 			});
 			setSelectedStyleData({ ...selectedStylesData });
+			setupOLRDATASET({ ...selectedStylesData });
 			// setShowStyle(true);
 		}
 	};
@@ -408,76 +529,123 @@ const Step2Componentv2 = () => {
 	}
 
 	const onAddWarehouseClicked = async () => {
-		const wareHouse = wareHouses.find((w) => w.id == selectedWareHouse);
-		if (wareHouse) {
-			let cselectedStyleData = { ...selectedStyleData };
+		if(selectedWareHouse.length === 0)
+		{
+			alert('Please Select Warehouse?');
+			return;
+		}
+
+		const wareHouse = await getWarehousesDetail(selectedWareHouse);
+		
+		let cselectedStyleData = { ...selectedStyleData };
 			cselectedStyleData.newLines.forEach((line) => {
-				line.wareHouse = wareHouse.name;
+				line.wareHouse = wareHouse[0].name;
 			});
 			setSelectedStyleData(cselectedStyleData);
-		}
+
+			let olr_cselectedStyleData = upOLRDATASET.newLines;
+
+			upOLRDATASET.newLines.forEach((line_olr) => {
+				line_olr.wareHouse = wareHouse[0].name;
+			});
+
+			upOLRDATASET.newLines = olr_cselectedStyleData;
+
+			alert('All Rows updated.');
+
 	};
 
 	const onAddDelDateClicked = async () => {
+		if(requestDelDate.length === 0)
+		{
+			alert('Please Select Date?');
+			return;
+		}
+
 		let cselectedStyleData = { ...selectedStyleData };
 		cselectedStyleData.newLines.forEach((line) => {
 			line.requestDelDate = requestDelDate;
 		});
 		setSelectedStyleData(cselectedStyleData);
+		
+		let olr_cselectedStyleData = upOLRDATASET.newLines;
+
+			upOLRDATASET.newLines.forEach((line_olr) => {
+				line_olr.requestDelDate = requestDelDate;
+			});
+
+			upOLRDATASET.newLines = olr_cselectedStyleData;
+
+			alert('All Rows updated.');
 	};
+
 
 	const onInputSheetDownload = async () => {
 		
-		//Devon Comment This
-		/*const planner: any = vsInputSheetContext.planners.find(
-			(lin: any) => lin.id == selectedPlanner
-		);
-		const merchandiser: any = vsInputSheetContext.merchandisers.find(
-			(lin: any) => lin.id == selectedMerchandiser
-		);
-		const garmentComposition: any =
-			vsInputSheetContext.garmentCompositions.find(
-				(lin: any) => lin.id == selectedGarmentCompositions
-			);
-		const buyerDivision: any = vsInputSheetContext.buyerDivisionspink.find(
-			(buy: any) => buy.id == selectedBuyerDivisions
-		);
-		const leadFactory: any = vsInputSheetContext.leadFactories.find(
-			(prod: any) => prod.id == selectedLeadFactories
-		);*/
+		selectedStyleData.newLines = upOLRDATASET.newLines;
 
-		const buyerDivision = divisionCodes.find((s) => s.id == selectedBuyerDivisions)?.name ?? '';
+		if(selectedMerchandiser.length === 0)
+		{
+			alert('Please Select Merchandiser?');
+			return;
+		}
+		
+		if(selectedPlanner.length === 0)
+		{
+			alert('Please Select Planner?');
+			return;
+		}
 
-		const M3buyerDivision = M3buyerDivisions.find((s) => s.id == selectedM3BuyerDivision)?.name ?? '';
+		if(selectedLeadFactories.length === 0)
+		{
+			alert('Please Select Lead factory?');
+			return;
+		}
 
-		const Grouptechclass = M3buyerDivisions.find((s) => s.id == selectedM3BuyerDivision)?.gtc ?? '';
+		if(selectedGarmentCompositions.length === 0)
+		{
+			alert('Please Select Garment Composition?');
+			return;
+		}
 
-		const planner = planners.find((s) => s.id == selectedPlanner)?.name ?? '';
-		const merchandiser = pinkmerchandisers.find((s) => s.id == selectedMerchandiser)?.name ?? '';
+		if(selectedBuyerDivisions.length === 0)
+		{
+			alert('Please Select Buyer Division?');
+			return;
+		}
 
-		const garmentComposition = garmentCompositionPink.find((s) => s.id == selectedGarmentCompositions)?.name ?? '';
-		const leadFactory = leadFactories.find((s) => s.id == selectedLeadFactories)?.name ?? '';
+		if(selectedM3BuyerDivision.length === 0)
+		{
+			alert('Please Select M3 Buyer Division?');
+			return;
+		}
+
+		const buyerDevisionvalues = await getBuyerDivisionsDetail(selectedBuyerDivisions);
+		const buyerDivision = buyerDevisionvalues[0].code;
+
+		const M3values = await getM3BuyerDivisionDetail(selectedM3BuyerDivision);
+		const M3buyerDivision = M3values[0].name;
+		const Grouptechclass = M3values[0].gtc;
+
+		const plannervalues = await getPlannersDetail(selectedPlanner);
+		const planner = plannervalues[0].name;
+
+		const merchandiservalues =await getMerchandiserDetail(selectedMerchandiser);
+		const merchandiser = merchandiservalues[0].name;
+
+		const garmentCompositionvalues = await getGarmentCompositionsDetail(selectedGarmentCompositions);
+		const garmentComposition = garmentCompositionvalues[0].name;
+
+		const leadFactoryvalues = await getLeadFactoriesDetail(selectedLeadFactories);
+		const leadFactory = leadFactoryvalues[0].name;
 
 		const seasoncode = seasonalCodes.find((s) => s.id == selectedSeasonCode)?.name ?? '';
 		const yearcode = yearCodes.find((s) => s.id == selectedYearCode)?.name ?? '';
 
-		// const deliveryDates = selectedStyleData.newLines
-		// 	.filter((l) => l.requestDelDate)
-		// 	.map((l) => l.requestDelDate);
-		// let uniquedeliveryDates = [...new Set([...deliveryDates])];
-		// uniquedeliveryDates.sort();
 		let newStyleno = '';
-		//let HeaderSeason='';
-		// This is used to create style number/ This is not used in BFF
-		// selectedStyleData.purchasingGroup.toString() === '361'
-		// 	? 'K'
-		// 	: selectedStyleData.purchasingGroup.toString() === '233'
-		// 	? 'P'
-		// 	: ''; 
-		// ---- added by Rushan -------//
-
+		
 		//BFF_LBRANDS_VS_WOMENS_SLEEP_VSD
-		newStyleno = selectedBuyerDivisions;
+		newStyleno = buyerDevisionvalues[0].code;
 
 		newStyleno += selectedInseam;
 
@@ -503,8 +671,8 @@ const Step2Componentv2 = () => {
 		//Devon Comment Below Line
 		//newStyleno += (season + selectedStyleData.itemGroup.slice(-1));
 
-
-		const selectedBuyerDivisionName: string = divisionCodes.find(i => i.id === selectedBuyerDivisions)?.name ?? '';
+		const selectedBuyerDivisionName: string = buyerDevisionvalues[0].name;
+		
 		const selectedInseamName: string = inseams.find(i => i.id === selectedInseam)?.name ?? '';
 		
 		selectedStyleData.newLines = selectedStyleData.newLines.filter(i => i.DIVISIONCODE === selectedBuyerDivisionName &&
@@ -540,23 +708,6 @@ const Step2Componentv2 = () => {
 			selectedStyleData.newLines = combinedArrays;
 		}
 
-
-		// ---- added by Rushan -------//
-
-		// if (seasoncode && yearcode) {
-		// 	if (pinkInputSheetContext.style.length < 6) {
-		// 		newStyleno +=
-		// 			pinkInputSheetContext.style + seasoncode.name + yearcode.name;
-		// 	} else {
-		// 		newStyleno +=
-		// 			pinkInputSheetContext.style.substring(1, 6) +
-		// 			seasoncode.name +
-		// 			yearcode.name;
-		// 	}
-		// } else {
-		// 	newStyleno += pinkInputSheetContext.style;
-		// }
-		//console.log(selectedStyleData)
 
 		const wb = XLSX.utils.book_new();
 		let template = COTblData(
@@ -640,6 +791,10 @@ const Step2Componentv2 = () => {
 				line[ecvisionHeaderNames.L],
 				line[ecvisionHeaderNames.XL],
 				line[ecvisionHeaderNames.XXL],
+				line[ecvisionHeaderNames.XXXL],
+				line[ecvisionHeaderNames.SMALL],
+				line[ecvisionHeaderNames.MED],
+				line[ecvisionHeaderNames.LARGE],
 				''//CO
 			];
 			template.push(rowToAdd);
@@ -659,7 +814,6 @@ const Step2Componentv2 = () => {
 			}
 		}
 		
-
 		const xxsIndex = template[14].findIndex(i => i === 'XXS.');
 		if (xxsIndex > -1) template[14][xxsIndex] = 'XXS' + getinseamwithsize(selectedInseam);
 
@@ -680,6 +834,18 @@ const Step2Componentv2 = () => {
 
 		const xxlIndex = template[14].findIndex(i => i === 'XXL.');
 		if (xxlIndex > -1) template[14][xxlIndex] = 'XXL' + getinseamwithsize(selectedInseam);
+
+		const xxxlIndex = template[14].findIndex(i => i === 'XXXL.');
+		if (xxxlIndex > -1) template[14][xxxlIndex] = 'XXXL' + getinseamwithsize(selectedInseam);
+
+		const smallIndex = template[14].findIndex(i => i === 'SMALL.');
+		if (smallIndex > -1) template[14][smallIndex] = 'SMALL' + getinseamwithsize(selectedInseam);
+
+		const medIndex = template[14].findIndex(i => i === 'MED.');
+		if (medIndex > -1) template[14][medIndex] = 'MED' + getinseamwithsize(selectedInseam);
+
+		const longIndex = template[14].findIndex(i => i === 'LARGE.');
+		if (longIndex > -1) template[14][longIndex] = 'LARGE' + getinseamwithsize(selectedInseam);
 
 		//BOM removing colors not in CO and Thread lines & Dummy in PLM
 		const filteredBOM: any[] = pinkInputSheetContext.BOM.filter((row: any) => {
@@ -719,6 +885,10 @@ const Step2Componentv2 = () => {
 		ws['!cols'] = wscols;
 		XLSX.utils.book_append_sheet(wb, ws, 'CO LINE');// changed StNDdize CO to CO Line 
 
+		for (var i = 0; i < 14; i++) {
+			filteredBOM.unshift(['']);
+		}
+
 		//BOM sheet
 		const ws2 = XLSX.utils.aoa_to_sheet(filteredBOM);
 		XLSX.utils.book_append_sheet(wb, ws2, 'BOM LINE');// changed StNDdize BOM to BOM LINE 
@@ -729,6 +899,8 @@ const Step2Componentv2 = () => {
 		OpsTrackSheetFormat(ws3, opsToTrackData);
 
 		XLSX.writeFile(wb, 'VS Pink Input Sheet.xlsx'); //PINk to VS Sleep
+
+		selectedStyleData.newLines = upOLRDATASET.newLines;
 	};
 
 	//On Thread sheet upload
@@ -796,7 +968,7 @@ const Step2Componentv2 = () => {
 	return (
 		<React.Fragment>
 			<Grid container direction='row' justify='space-evenly'>
-				<Grid item xs={3} style={{ marginTop: '0.5rem' }}>
+				<Grid item xs={6} style={{ marginTop: '0.5rem' }}>
 					<label
 						className='form-control'
 						style={{
@@ -816,7 +988,7 @@ const Step2Componentv2 = () => {
 						/>
 					</label>
 				</Grid>
-				<Grid item xs={4} style={{ marginLeft: '0.5rem', marginTop: '0.5rem' }}>
+				<Grid item xs={4}  hidden={true} style={{ marginLeft: '0.5rem', marginTop: '0.5rem' }}>
 					<Grid container direction='row'>
 						<label
 							className='form-control'
@@ -849,22 +1021,7 @@ const Step2Componentv2 = () => {
 						)}
 					</Grid>
 				</Grid>
-				<Grid item xs={2} style={{ marginLeft: '0.5rem', marginTop: '0.5rem' }}>
-					{/* <Button
-						variant='contained'
-						color='secondary'
-						onClick={handlePacking}
-						endIcon={
-							packingStatus === true ? (
-								<CheckCircleOutlineIcon color='inherit' />
-							) : (
-								true
-							)
-						}
-					>
-						Add Packing
-					</Button> */}
-				</Grid>
+				
 				<Grid item xs={2} style={{ marginLeft: '0.5rem', marginTop: '0.5rem' }}>
 					<Button
 						variant='contained'
@@ -892,7 +1049,7 @@ const Step2Componentv2 = () => {
 							<Grid item xs={4}>
 								<DropDownComponent
 									selectedField={selectedMerchandiser}
-									data={pinkmerchandisers}
+									data={merchandisers}
 									onSelectChange={changeMerchandiser}
 									fieldName='Merchandisers'
 								/>
@@ -908,7 +1065,7 @@ const Step2Componentv2 = () => {
 							<Grid item xs={4}>
 								<DropDownComponent
 									selectedField={selectedLeadFactories}
-									data={vsInputSheetContext.leadFactories}
+									data={leadFactories}
 									onSelectChange={changeLeadfactory}
 									fieldName='Lead Factories'
 								/>
@@ -916,8 +1073,7 @@ const Step2Componentv2 = () => {
 							<Grid item xs={4}>
 								<DropDownComponent
 									selectedField={selectedGarmentCompositions}
-									data={garmentCompositionPink}
-									// data={pinkGarmentCompositions}
+									data={garmentCompositions}
 									onSelectChange={changeGarmentCom}
 									fieldName='Garment Compositions'
 								/>
@@ -925,8 +1081,7 @@ const Step2Componentv2 = () => {
 							<Grid item xs={4}>
 								<DropDownComponent
 									selectedField={selectedBuyerDivisions}
-									// data={vsInputSheetContext.buyerDivisions}
-									data={divisionCodes}
+									data={buyerDivisions}
 									onSelectChange={changeBuyerDivision}
 									fieldName='Buyer Division'
 								/>
@@ -966,7 +1121,7 @@ const Step2Componentv2 = () => {
 							<Grid item xs={6}>
 								<DropDownComponent
 									selectedField={selectedM3BuyerDivision}
-									data={M3buyerDivisions}
+									data={m3buyerDivisions}
 									onSelectChange={changeM3BuyerDivision}
 									fieldName='M3 Buyer Division'
 								/>
@@ -986,7 +1141,7 @@ const Step2Componentv2 = () => {
 							<Grid item xs={12}>
 								<DropDownComponent
 									fieldName='Warehouse'
-									data={wareHouses}
+									data={warehouses}
 									onSelectChange={onWareHouseChange}
 									selectedField={selectedWareHouse}
 								/>
@@ -1081,12 +1236,75 @@ const Step2Componentv2 = () => {
 				}}
 				BackdropComponent={Backdrop}
 			>
-				<PackingItem
-					SheetContext={PinkInputSheetContext}
-					bom={pinkInputSheetContext}
-					setOpenPackingModal={setOpenPackingModal}
-					setPackingStatus={setPackingStatus}
+			<>
+			<div style={{backgroundColor:'#fff',width:'500px',paddingTop:'10px',paddingBottom:'10px',paddingLeft:'10px',paddingRight:'10px'}} >
+				<p>Change Pack Method and Warehouse</p>
+				<hr/>
+
+				<DropDownComponent 
+				fieldName='Warehouse' 
+				data={vsInputSheetContext.warehouses}
+				onSelectChange={onWareHouseChangeForLine}
+				selectedField={selectedWareHouseForLine} />
+
+				<br/>
+
+				<Button
+					variant='contained'
+					color='secondary'
+					onClick={onUpdatewarehouse}
+				>
+					Update Warehouse
+				</Button>
+
+				<br/>
+				<br/>
+
+				<DropDownComponent 
+				fieldName='pack method' 
+				data={[{id:'pack Single 30',name:'pack Single 30'},{id:'30P-30 pcs per 1 poly bag',name:'30P-30 pcs per 1 poly bag'}]}
+				onSelectChange={onPackMethodChangeForLine}
+				selectedField={selectedPackMethodForLine}
 				/>
+
+				<br/>
+
+				<Button
+					variant='contained'
+					color='secondary'
+					onClick={onUpdatePackMethod}
+					
+				>
+					Update Pack Method
+				</Button>
+
+				<br/>
+				<br/>
+
+				<input style={{ height: '2.5vw' }}
+					name='date'
+					type='date'
+					value={requestDelDate}
+					onChange={(e) => {
+						const { value } = e.target;
+						setrequestDelDate(value);
+					}}
+					className='form-control'
+				/>
+
+				<br/>
+
+				<Button
+					variant='contained'
+					color='secondary'
+					onClick={onUpdateDelDateCustomerClicked}
+					
+				>
+					Update Customer Delivery Date
+				</Button>
+
+			</div>
+			</>
 			</Modal>
 		</React.Fragment>
 	);

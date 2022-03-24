@@ -98,6 +98,20 @@ export const getStyleList = async (year, type) => {
 	return data;
 };
 
+export const getStyleListaritzia = async (year, type) => {
+	const requestOptions = {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ year: year, type: type }),
+	};
+	const data = await fetch(
+		baseUrl + 'inputSheet/getAritziaStylesFromEpixo',
+		requestOptions
+	);
+
+	return data;
+};
+
 export const getBOMVersions = async (styleId) => {
 	const requestOptions = {
 		method: 'POST',

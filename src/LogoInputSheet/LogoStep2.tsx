@@ -16,7 +16,6 @@ import {
 	inseams,
 	packingTypes,
 	seasonalCodes,
-	wareHouses,
 	yearCodes
 } from '../Services/datasets/pink.d';
 import { 
@@ -34,7 +33,6 @@ import ecvisionHeaderNames from '../Services/datasets/ecvisionNames';
 import { wscols } from '../inputSheetTemplate';
 import { COTblData, operationtable } from '../Services/datasets/common.d';
 import { SheetJSFT } from '../utils/sheetJSFT';
-import PackingItem from '../packingItems/PackingItem';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import {
 	getDeliveryMethodPink,
@@ -47,14 +45,7 @@ import { getBOMThreadLinesLogo, getThreadLines } from '../Services/threadsheet';
 import { OpsTrackSheetFormat } from '../Services/formatExcel';
 
 const Step2Component = () => {
-	// const [isFileUploaded, setIsFileUploaded] = useState(false);
-	// const [isFileReading, setisFileReading] = useState(false);
-	// const [stylesData, setStylesData] = useState([]);
-	// const [selectedStyle, setSelectedStyle] = useState('');
-	// const [showStyle, setShowStyle] = useState(false);
-	// const [pinkGarmentCompositions, setpinkGarmentCompositions] = useState([]);
-	// const [downloadBtnStatus, setdownloadBtnStatus] = useState(false);
-
+	
 	const pinkInputSheetContext = useContext(PinkInputSheetContext);
 	const vsInputSheetContext = useContext(VsInputSheetContext);
 	const [filename, setFileName] = useState('Select OLR File');
@@ -78,12 +69,9 @@ const Step2Component = () => {
 	const [threadFileName, setthreadFileName] = useState<any>('Upload Thread YY');
 	const [threadData, setThreadData] = useState<any>([]);
 	const [openPackingModal, setOpenPackingModal] = useState<boolean>(false);
-	const [packingStatus, setPackingStatus] = useState<boolean>(false);
 	const COColors: any[] = [];
 
 	const handleClose = () => setOpenPackingModal(false);
-	const handlePacking = () => setOpenPackingModal(true);
-
 	const [uniq_linekey, setuniq_linekey] = useState<any>('');
 
 	const changeMerchandiser = (id) => setselectedMerchandiser(id);
@@ -198,8 +186,6 @@ const Step2Component = () => {
 						sheetStyles[0][ecvisionHeaderNames.GENERICNO]
 					);
 					changeSelectedStyleNo(uniqueStylesWithData);
-
-					
 					
 				} else {
 					alert('No Style ' + pinkInputSheetContext.style);
@@ -210,8 +196,7 @@ const Step2Component = () => {
 		};
 
 		if (rABS) reader.readAsBinaryString(files[0]);
-		else reader.readAsArrayBuffer(files[0]);
-
+		else reader.readAsArrayBuffer(files[0]); 
 		
 	};
 
@@ -219,17 +204,7 @@ const Step2Component = () => {
 		// setShowStyle(false);
 		setOpenPackingModal(true);
 		setuniq_linekey(masterColorKey);
-		//alert(masterColorKey);
-		const wareHouse = wareHouses.find((w) => w.id == selectedWareHouse);
-		if (selectedStyleData) {
-			const relevantLine = selectedStyleData.newLines.find(
-				(l) => l.masterColorKey == masterColorKey
-			);
-			relevantLine.requestDelDate = requestDelDate;
-			relevantLine.wareHouse = wareHouse ? wareHouse.name : '';
-			setSelectedStyleData(selectedStyleData);
-			// setShowStyle(true);
-		}
+		
 	};
 
 	const onUpdatewarehouse = async () => {
@@ -237,12 +212,13 @@ const Step2Component = () => {
 		if(uniq_linekey.length > 0)
 		{
 			const wareHouse = await getWarehousesDetail(selectedWareHouseForLine);
-
+ 
 			const relevantLine = selectedStyleData.newLines.find(
 				(l) => l.masterColorKey === uniq_linekey
 			);
 
 			relevantLine.wareHouse = wareHouse ? wareHouse[0].name : '';
+			
 			setSelectedStyleData(selectedStyleData);
 
 			const relevantLine_olr = upOLRDATASET.newLines.find(
@@ -251,11 +227,12 @@ const Step2Component = () => {
 
 			relevantLine_olr.wareHouse = wareHouse ? wareHouse[0].name : '';
 
+			setupOLRDATASET(upOLRDATASET);
+
 			setOpenPackingModal(false);
 		}
 		else
 		{
-			
 			alert('Please Select warehouse and data.');
 		}
 
@@ -266,11 +243,12 @@ const Step2Component = () => {
 		if(uniq_linekey.length > 0)
 		{
 			const packmethod = selectedPackMethodForLine;
-
+			 
 			const relevantLine = selectedStyleData.newLines.find(
 				(l) => l.masterColorKey === uniq_linekey
 			);
 
+			
 			relevantLine.packMethod = packmethod ? packmethod : '';
 			setSelectedStyleData(selectedStyleData);
 
@@ -280,11 +258,12 @@ const Step2Component = () => {
 
 			relevantLine_olr.packMethod = packmethod ? packmethod : '';
 
+			setupOLRDATASET(upOLRDATASET);
+
 			setOpenPackingModal(false);
 		}
 		else
 		{
-			
 			alert('Please Select Pack Method and data.');
 		}
 
@@ -449,7 +428,7 @@ const Step2Component = () => {
 			resDate.setDate(date.getDate() - 1);
 
 			let weekday: number = resDate.getUTCDay();
-			if (weekday == 0) {
+			if (weekday === 0) {
 				resDate.setDate(resDate.getDate() - 1);
 			}
 		}
@@ -464,6 +443,8 @@ const Step2Component = () => {
 		}
 
 		const wareHouse = await getWarehousesDetail(selectedWareHouse);
+
+		alert(wareHouse);
 		
 		let cselectedStyleData = { ...selectedStyleData };
 			cselectedStyleData.newLines.forEach((line) => {
@@ -513,12 +494,8 @@ const Step2Component = () => {
 	//When click download button Code execute from here
 	const onInputSheetDownload = async () => {
 
-		//alert(JSON.stringify(upOLRDATASET.newLines.length));
-		//alert(JSON.stringify(selectedStyleData.newLines.length));
-
 		selectedStyleData.newLines = upOLRDATASET.newLines;
 		
-
 		if(selectedMerchandiser.length === 0)
 		{
 			alert('Please Select Merchandiser?');
@@ -578,6 +555,7 @@ const Step2Component = () => {
 		const yearcode = yearCodes.find((s) => s.id == selectedYearCode)?.name ?? '';
 
 		
+		
 		let newStyleno = '';
 		
 		//BFF_LBRANDS_VS_WOMENS_SLEEP_VSD
@@ -619,7 +597,7 @@ const Step2Component = () => {
 		// if selected packing type is Single, no nrrd to change the row information,
 		// else if selected packing type is 'Double', copy the individual VPO number with row and then add TOP and Bottom to the end of COlOR column.
 
-		if(selectedPackingType == 'D'){
+		if(selectedPackingType === 'D'){
 			
 			//deep cloning array because [..array] not work for complex arrays
 			let newLinesTop:any[]  = JSON.parse(JSON.stringify(selectedStyleData.newLines));
@@ -673,7 +651,7 @@ const Step2Component = () => {
 
 			//Get matching color from BOM Garment Color(last 4 chars) based on Color code(last 4 chars) in OLR
 			const matchingColor: any = pinkInputSheetContext.colorData.find(
-				(c: any) => c.slice(-6) == line.MASTCOLORCODE.toString().slice(-6)
+				(c: any) => c.slice(-6) === line.MASTCOLORCODE.toString().slice(-6)
 			);
 			let newColor = matchingColor;
 
@@ -826,8 +804,7 @@ const Step2Component = () => {
 		const ws = XLSX.utils.aoa_to_sheet(template);
 		ws['!cols'] = wscols;
 		XLSX.utils.book_append_sheet(wb, ws, 'CO LINE');// changed StNDdize CO to CO Line 
-
-
+ 
 		for (var i = 0; i < 14; i++) {
 			filteredBOM.unshift(['']);
 		} 
@@ -889,7 +866,7 @@ const Step2Component = () => {
 
 			//Get all lines from the Thread Master
 			const response = await getRmColorThread(true);
-			if (response.status != 200 && response.status != 201) {
+			if (response.status !== 200 && response.status !== 201) {
 				setThreadStatus(null);
 				const error = await response.json();
 				console.log(error.message);
@@ -965,22 +942,7 @@ const Step2Component = () => {
 						)}
 					</Grid>
 				</Grid>
-				<Grid item xs={2} style={{ marginLeft: '0.5rem', marginTop: '0.5rem' }}>
-					{/* <Button
-						variant='contained'
-						color='secondary'
-						onClick={handlePacking}
-						endIcon={
-							packingStatus === true ? (
-								<CheckCircleOutlineIcon color='inherit' />
-							) : (
-								true
-							)
-						}
-					>
-						Add Packing
-					</Button> */}
-				</Grid>
+				
 				<Grid item xs={2} style={{ marginLeft: '0.5rem', marginTop: '0.5rem' }}>
 					<Button
 						variant='contained'
@@ -1226,7 +1188,7 @@ const Step2Component = () => {
 				fieldName='pack method' 
 				data={[{id:'pack Single 30',name:'pack Single 30'},{id:'30P-30 pcs per 1 poly bag',name:'30P-30 pcs per 1 poly bag'}]}
 				onSelectChange={onPackMethodChangeForLine}
-				selectedField={''}
+				selectedField={selectedPackMethodForLine}
 				/>
 
 				<br/>

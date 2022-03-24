@@ -16,6 +16,7 @@ import {
 } from './Services/data';
 import PinkComponent from './PinkMainPage';
 import PinkComponent2 from './PinkMainPage2';
+import AritziaMainPage from './AritziaMainPage';
 import { Redirect } from 'react-router-dom';
 
 const MainPage = () => {
@@ -23,12 +24,11 @@ const MainPage = () => {
 		{ name: 'VS Sleep', id: 1 },
 		{ name: 'VS Modern', id: 2 },
 		{ name: 'Pink', id: 3 },
+		{ name: 'Aritzia', id: 4 },
+		{ name: 'PVH', id: 5 },
 	];
 
-	const buyerDivisionspink = [
-		{ id: 'L', name: 'PKD' },
-		{ id: 'R', name: 'PKS' },
-	];
+	const buyerDivisionspink = [];
 	const [selectedDivision, setSelectedDivision] = useState(1);
 	const [merchandisers, setMerchandisers] = useState([]);
 	const [planners, setplanners] = useState([]);
@@ -114,7 +114,7 @@ const MainPage = () => {
 		>
 			<Header headerTitle={divisions.find(i=>i.id===parseInt(selectedDivision))?.name} />
 
-			{ parseInt(selectedDivision) === 1 ? <LogoComponent /> : parseInt(selectedDivision) === 2 ? <PinkComponent /> : <PinkComponent2/> }
+			{ parseInt(selectedDivision) === 1 ? <LogoComponent /> : parseInt(selectedDivision) === 2 ? <PinkComponent /> : parseInt(selectedDivision) === 3 ? <PinkComponent2 /> : parseInt(selectedDivision) === 4 ? <AritziaMainPage /> : <AritziaMainPage/> }
 		
 		</VSInputSheetContext.Provider>
 		
