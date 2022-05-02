@@ -38,7 +38,7 @@ import {
 	getWarehousesDetail } from '../Services/data';
 import ecvisionHeaderNames from '../Services/datasets/ecvisionNames';
 import { wscols } from '../inputSheetTemplate';
-import { COTblData, operationtable } from '../Services/datasets/common.d';
+import { COTblDataPink, operationtable } from '../Services/datasets/common.d';
 import { SheetJSFT } from '../utils/sheetJSFT';
 import PackingItem from '../packingItems/PackingItem';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
@@ -145,6 +145,13 @@ const Step2Componentv2 = () => {
 
 	//read OLR file
 	const onFileSelect = async (e) => {
+
+		if(pinkInputSheetContext.style.length < 1)
+		{
+			alert('Please Select/Sync Style and BOM.');
+			return;
+		}
+
 		const files = e.target.files;
 		// await setisFileReading(true);
 		await setFileName(files[0].name);
@@ -254,6 +261,9 @@ const Step2Componentv2 = () => {
 						sheetStyles[0][ecvisionHeaderNames.GENERICNO]
 					);
 					changeSelectedStyleNo(uniqueStylesWithData);
+
+					alert(sheetStyles.length.toString()+' No of Related Rows Found in OLR.');
+
 				} else {
 					alert('No Style ' + pinkInputSheetContext.style);
 				}
@@ -384,47 +394,34 @@ const Step2Componentv2 = () => {
 						code
 				);
 
-				let tempXXS, tempXS, tempS, tempM, tempL, tempXL, tempXXL, tempXXXL, tempSMALL, tempMED, tempLARGE;
+				let tempXS, tempXL, tempXXL, tempSMALL, tempMED, tempLARGE;
 				selectedColorLines.forEach((l) => {
 					const tempSize = l[ecvisionHeaderNames.MASTSIZEDESC]
 						.toUpperCase()
 						.trim();
-					if (tempSize.includes('XXS')) {
-						tempXXS = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.includes('XS')) {
+					
+					if (tempSize.includes('XS')) {
 						tempXS = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.includes('S')) {
-						tempS = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.includes('M')) {
-						tempM = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.includes('L')) {
-						tempL = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.includes('XL')) {
-						tempXL = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.includes('XXL')) {
-						tempXXL = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.includes('XXXL')) {
-						tempXXXL = l[ecvisionHeaderNames.ORDERQTY];
 					} else if (tempSize.includes('SMALL')) {
 						tempSMALL = l[ecvisionHeaderNames.ORDERQTY];
 					} else if (tempSize.includes('MED')) {
 						tempMED = l[ecvisionHeaderNames.ORDERQTY];
 					} else if (tempSize.includes('LARGE')) {
 						tempLARGE = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.includes('XL')) {
+						tempXL = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.includes('XXL')) {
+						tempXXL = l[ecvisionHeaderNames.ORDERQTY];
 					}
 				});
 
-				const XXS = tempXXS > 0 ? tempXXS : 0;
 				const XS = tempXS > 0 ? tempXS : 0;
-				const S = tempS > 0 ? tempS : 0;
-				const M = tempM > 0 ? tempM : 0;
-				const L = tempL > 0 ? tempL : 0;
-				const XL = tempXL > 0 ? tempXL : 0;
-				const XXL = tempXXL > 0 ? tempXXL : 0;
-				const XXXL = tempXXXL > 0 ? tempXXXL : 0;
+				
 				const SMALL = tempSMALL > 0 ? tempSMALL : 0;
 				const MED = tempMED > 0 ? tempMED : 0;
 				const LARGE = tempLARGE > 0 ? tempLARGE : 0;
+				const XL = tempXL > 0 ? tempXL : 0;
+				const XXL = tempXXL > 0 ? tempXXL : 0;
 
 				const lineToBeCreated = {
 					masterColorKey: code,
@@ -442,18 +439,13 @@ const Step2Componentv2 = () => {
 						selectedColorLines[0][ecvisionHeaderNames.CUSTCOLORCODE],
 					CUSTSTYLE: selectedColorLines[0].CUSTSTYLE,
 					CUSTSTYLEDESC: selectedColorLines[0].CUSTSTYLEDESC,
-					XXS,
 					XS,
-					S,
-					M,
-					L,
-					XL,
-					XXL,
-					XXXL,
 					SMALL,
 					MED,
 					LARGE,
-					TOTALQTY: parseInt(XXS) + parseInt(XS) + parseInt(S) + parseInt(M) + parseInt(L) + parseInt(XL) + parseInt(XXL) + parseInt(XXXL) + parseInt(SMALL) + parseInt(MED) + parseInt(LARGE),
+					XL,
+					XXL,
+					TOTALQTY: parseInt(XS) + parseInt(SMALL) + parseInt(MED) + parseInt(LARGE)+ parseInt(XL) + parseInt(XXL),
 					DIVISIONCODE: selectedColorLines[0][ecvisionHeaderNames.DIVISIONCODE],
 					MASTSIZEDESC: selectedColorLines[0][ecvisionHeaderNames.MASTSIZEDESC],
 					FACTORYCOST: selectedColorLines[0][ecvisionHeaderNames.FACTORYCOST],
@@ -583,6 +575,8 @@ const Step2Componentv2 = () => {
 	const onInputSheetDownload = async () => {
 		
 		selectedStyleData.newLines = upOLRDATASET.newLines;
+		
+		/* Devon Comment This
 
 		if(selectedMerchandiser.length === 0)
 		{
@@ -608,20 +602,25 @@ const Step2Componentv2 = () => {
 			return;
 		}
 
+		
+		if(selectedM3BuyerDivision.length === 0)
+		{
+			alert('Please Select M3 Buyer Division?');
+			return;
+		}
+		*/
+
 		if(selectedBuyerDivisions.length === 0)
 		{
 			alert('Please Select Buyer Division?');
 			return;
 		}
 
-		if(selectedM3BuyerDivision.length === 0)
-		{
-			alert('Please Select M3 Buyer Division?');
-			return;
-		}
 
 		const buyerDevisionvalues = await getBuyerDivisionsDetail(selectedBuyerDivisions);
 		const buyerDivision = buyerDevisionvalues[0].code;
+
+		/* Devon Comment This
 
 		const M3values = await getM3BuyerDivisionDetail(selectedM3BuyerDivision);
 		const M3buyerDivision = M3values[0].name;
@@ -638,6 +637,8 @@ const Step2Componentv2 = () => {
 
 		const leadFactoryvalues = await getLeadFactoriesDetail(selectedLeadFactories);
 		const leadFactory = leadFactoryvalues[0].name;
+
+		*/
 
 		const seasoncode = seasonalCodes.find((s) => s.id == selectedSeasonCode)?.name ?? '';
 		const yearcode = yearCodes.find((s) => s.id == selectedYearCode)?.name ?? '';
@@ -677,7 +678,7 @@ const Step2Componentv2 = () => {
 		
 		selectedStyleData.newLines = selectedStyleData.newLines.filter(i => i.DIVISIONCODE === selectedBuyerDivisionName &&
 			i.MASTSIZEDESC.includes(selectedInseamName));
-			
+			console.log(selectedStyleData.newLines);
 		// if selected packing type is Single, no nrrd to change the row information,
 		// else if selected packing type is 'Double', copy the individual VPO number with row and then add TOP and Bottom to the end of COlOR column.
 
@@ -710,19 +711,19 @@ const Step2Componentv2 = () => {
 
 
 		const wb = XLSX.utils.book_new();
-		let template = COTblData(
+		let template = COTblDataPink(
 			false,
 			newStyleno,
 			selectedStyleData,
-			leadFactory,
+			'',//leadFactory,
 			buyerDivision,
-			merchandiser,
-			planner,
-			garmentComposition,
-			M3buyerDivision,
+			'',//merchandiser,
+			'',//planner,
+			'',//garmentComposition,
+			'',//M3buyerDivision,
 			'KNUND-Knit Underwear', //product group
 			season,
-			Grouptechclass,
+			'',//Grouptechclass,
 			//HeaderSeason
 
 		);
@@ -756,8 +757,7 @@ const Step2Componentv2 = () => {
 				parseInt(pinkInputSheetContext.styleid),
 				parseInt(pinkInputSheetContext.bomid)
 			);
-			
-			
+
 			//Get FOB based on Color (CO) from FOB List
 			/*const FOB = FOBList.find(
 				(item: any) => item.Garment.toUpperCase() === newColor.toUpperCase()
@@ -784,17 +784,12 @@ const Step2Componentv2 = () => {
 				line.packMethod,
 				zft,
 				line[ecvisionHeaderNames.TOTALQTY],
-				line[ecvisionHeaderNames.XXS],
-				line[ecvisionHeaderNames.XS],
-				line[ecvisionHeaderNames.S],
-				line[ecvisionHeaderNames.M],
-				line[ecvisionHeaderNames.L],
-				line[ecvisionHeaderNames.XL],
-				line[ecvisionHeaderNames.XXL],
-				line[ecvisionHeaderNames.XXXL],
-				line[ecvisionHeaderNames.SMALL],
-				line[ecvisionHeaderNames.MED],
-				line[ecvisionHeaderNames.LARGE],
+				line["XS"],
+				line["SMALL"],
+				line["MED"],
+				line["LARGE"],
+				line["XL"],
+				line["XXL"],
 				''//CO
 			];
 			template.push(rowToAdd);
@@ -814,29 +809,8 @@ const Step2Componentv2 = () => {
 			}
 		}
 		
-		const xxsIndex = template[14].findIndex(i => i === 'XXS.');
-		if (xxsIndex > -1) template[14][xxsIndex] = 'XXS' + getinseamwithsize(selectedInseam);
-
 		const xsIndex = template[14].findIndex(i => i === 'XS.');
 		if (xsIndex > -1) template[14][xsIndex] = 'XS' + getinseamwithsize(selectedInseam);
-
-		const sIndex = template[14].findIndex(i => i === 'S.');
-		if (sIndex > -1) template[14][sIndex] = 'S' + getinseamwithsize(selectedInseam);
-
-		const mIndex = template[14].findIndex(i => i === 'M.');
-		if (mIndex > -1) template[14][mIndex] = 'M' + getinseamwithsize(selectedInseam);
-
-		const lIndex = template[14].findIndex(i => i === 'L.');
-		if (lIndex > -1) template[14][lIndex] = 'L' + getinseamwithsize(selectedInseam);
-
-		const xlIndex = template[14].findIndex(i => i === 'XL.');
-		if (xlIndex > -1) template[14][xlIndex] = 'XL' + getinseamwithsize(selectedInseam);
-
-		const xxlIndex = template[14].findIndex(i => i === 'XXL.');
-		if (xxlIndex > -1) template[14][xxlIndex] = 'XXL' + getinseamwithsize(selectedInseam);
-
-		const xxxlIndex = template[14].findIndex(i => i === 'XXXL.');
-		if (xxxlIndex > -1) template[14][xxxlIndex] = 'XXXL' + getinseamwithsize(selectedInseam);
 
 		const smallIndex = template[14].findIndex(i => i === 'SMALL.');
 		if (smallIndex > -1) template[14][smallIndex] = 'SMALL' + getinseamwithsize(selectedInseam);
@@ -846,6 +820,14 @@ const Step2Componentv2 = () => {
 
 		const longIndex = template[14].findIndex(i => i === 'LARGE.');
 		if (longIndex > -1) template[14][longIndex] = 'LARGE' + getinseamwithsize(selectedInseam);
+
+		const xlIndex = template[14].findIndex(i => i === 'XL.');
+		if (xlIndex > -1) template[14][xlIndex] = 'XL' + getinseamwithsize(selectedInseam);
+
+		const xxlIndex = template[14].findIndex(i => i === 'XXL.');
+		if (xxlIndex > -1) template[14][xxlIndex] = 'XXL' + getinseamwithsize(selectedInseam);
+
+		
 
 		//BOM removing colors not in CO and Thread lines & Dummy in PLM
 		const filteredBOM: any[] = pinkInputSheetContext.BOM.filter((row: any) => {
@@ -1046,7 +1028,7 @@ const Step2Componentv2 = () => {
 							}}
 							spacing={2}
 						>
-							<Grid item xs={4}>
+							<Grid hidden item xs={4}>
 								<DropDownComponent
 									selectedField={selectedMerchandiser}
 									data={merchandisers}
@@ -1054,7 +1036,7 @@ const Step2Componentv2 = () => {
 									fieldName='Merchandisers'
 								/>
 							</Grid>
-							<Grid item xs={4}>
+							<Grid hidden item xs={4}>
 								<DropDownComponent
 									selectedField={selectedPlanner}
 									data={planners}
@@ -1062,7 +1044,7 @@ const Step2Componentv2 = () => {
 									fieldName='Planners'
 								/>
 							</Grid>
-							<Grid item xs={4}>
+							<Grid hidden item xs={4}>
 								<DropDownComponent
 									selectedField={selectedLeadFactories}
 									data={leadFactories}
@@ -1070,7 +1052,7 @@ const Step2Componentv2 = () => {
 									fieldName='Lead Factories'
 								/>
 							</Grid>
-							<Grid item xs={4}>
+							<Grid hidden item xs={4}>
 								<DropDownComponent
 									selectedField={selectedGarmentCompositions}
 									data={garmentCompositions}
@@ -1118,7 +1100,7 @@ const Step2Componentv2 = () => {
 									fieldName='Packing Type'
 								/>
 							</Grid>
-							<Grid item xs={6}>
+							<Grid hidden item xs={6}>
 								<DropDownComponent
 									selectedField={selectedM3BuyerDivision}
 									data={m3buyerDivisions}
@@ -1165,7 +1147,7 @@ const Step2Componentv2 = () => {
 			</div>
 
 			<div style={{ marginTop: '2vw', marginRight: 10 }}>
-				<table className='table table-bordered table-sm'>
+				<table className='table table-bordered table-sm' style={{fontSize:"12px"}}>
 					<thead>
 						<tr>
 							<th scope='col'>Color Code</th>
@@ -1262,7 +1244,7 @@ const Step2Componentv2 = () => {
 
 				<DropDownComponent 
 				fieldName='pack method' 
-				data={[{id:'pack Single 30',name:'pack Single 30'},{id:'30P-30 pcs per 1 poly bag',name:'30P-30 pcs per 1 poly bag'}]}
+				data={[{id:'SIN-Single pc packing',name:'SIN-Single pc packing'},{id:'30P-30 pcs per 1 poly bag',name:'30P-30 pcs per 1 poly bag'}]}
 				onSelectChange={onPackMethodChangeForLine}
 				selectedField={selectedPackMethodForLine}
 				/>

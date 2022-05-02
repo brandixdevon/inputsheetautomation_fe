@@ -112,6 +112,20 @@ export const getStyleListaritzia = async (year, type) => {
 	return data;
 };
 
+export const getStyleListPvh = async (year, type) => {
+	const requestOptions = {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ year: year, type: type }),
+	};
+	const data = await fetch(
+		baseUrl + 'inputSheet/getPvhStylesFromEpixo',
+		requestOptions
+	);
+
+	return data;
+};
+
 export const getBOMVersions = async (styleId) => {
 	const requestOptions = {
 		method: 'POST',

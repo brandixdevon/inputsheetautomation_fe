@@ -17,6 +17,10 @@ import {
 import PinkComponent from './PinkMainPage';
 import PinkComponent2 from './PinkMainPage2';
 import AritziaMainPage from './AritziaMainPage';
+import PvhckMainPage from './PvhckMainPage';
+import PvhcksleepMainPage from './PvhcksleepMainPage';
+import PvhcknaMainPage from './PvhcknaMainPage';
+import BlankNone from './BlankNone';
 import { Redirect } from 'react-router-dom';
 
 const MainPage = () => {
@@ -25,7 +29,9 @@ const MainPage = () => {
 		{ name: 'VS Modern', id: 2 },
 		{ name: 'Pink', id: 3 },
 		{ name: 'Aritzia', id: 4 },
-		{ name: 'PVH', id: 5 },
+		{ name: 'PVH-Tommy', id: 5 },
+		{ name: 'PVH-Sleep', id: 6 },
+		{ name: 'PVH-CKNA', id: 7 },
 	];
 
 	const buyerDivisionspink = [];
@@ -114,7 +120,7 @@ const MainPage = () => {
 		>
 			<Header headerTitle={divisions.find(i=>i.id===parseInt(selectedDivision))?.name} />
 
-			{ parseInt(selectedDivision) === 1 ? <LogoComponent /> : parseInt(selectedDivision) === 2 ? <PinkComponent /> : parseInt(selectedDivision) === 3 ? <PinkComponent2 /> : parseInt(selectedDivision) === 4 ? <AritziaMainPage /> : <AritziaMainPage/> }
+			{ parseInt(selectedDivision) === 1 ? <LogoComponent /> : parseInt(selectedDivision) === 2 ? <PinkComponent /> : parseInt(selectedDivision) === 3 ? <PinkComponent2 /> : parseInt(selectedDivision) === 4 ? <AritziaMainPage /> : parseInt(selectedDivision) === 5 ? <PvhckMainPage /> : parseInt(selectedDivision) === 6 ? <PvhcksleepMainPage /> : parseInt(selectedDivision) === 7 ? <PvhcknaMainPage /> : <BlankNone/> }
 		
 		</VSInputSheetContext.Provider>
 		

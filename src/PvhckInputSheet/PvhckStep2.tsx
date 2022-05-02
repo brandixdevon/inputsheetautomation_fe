@@ -1,6 +1,6 @@
-//Aritzia View
+//PVH Tommy View
 import React, { useState, useContext, useEffect } from 'react';
-import PinkInputSheetContext from '../context/pinkContext';
+import PinkInputSheetContext from '../context/pvhckContext';
 import VsInputSheetContext from '../context/vsInputSheetContext';
 import {
 	Grid,
@@ -13,11 +13,11 @@ import DropDownComponent from '../components/layout/dropdownComponent';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
 import XLSX from 'xlsx';
 import {
-	inseams,
+	inseams_tommy as inseams,
 	packingTypes,
 	seasonalCodes,
-	yearCodes,
-} from '../Services/datasets/aritzia.d';
+	yearCodes
+} from '../Services/datasets/pvh.d';
 import { 
 	getMerchandiser,
 	getPlanners,
@@ -38,22 +38,21 @@ import {
 	getWarehousesDetail } from '../Services/data';
 import ecvisionHeaderNames from '../Services/datasets/ecvisionNames';
 import { wscols } from '../inputSheetTemplate';
-import { COTblData_Aritzia, operationtable } from '../Services/datasets/common.d';
+import { COTblData_Pvhtommy, operationtable } from '../Services/datasets/common.d';
 import { SheetJSFT } from '../utils/sheetJSFT';
-import PackingItem from '../packingItems/PackingItem';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import {
 	getDeliveryMethodPink,
 	getFOB,
-	getSeasonAritzia,
-	getShiptoAritzia,
+	getSeasonPink,
+	getZFtrPink,
 } from '../Services/pink';
 import { convertExcelDateToJsLocaleDateString } from '../utils/conversions';
 import { getBOMThreadLinesLogo, getThreadLines } from '../Services/threadsheet';
 import { OpsTrackSheetFormat } from '../Services/formatExcel';
 
 const Step2Component = () => {
-	
+
 	const [merchandisers, setMerchandisers] = useState([]);
 	const [planners, setplanners] = useState([]);
 	const [buyerDivisions, setbuyerDivisions] = useState([]);
@@ -61,12 +60,13 @@ const Step2Component = () => {
 	const [garmentCompositions, setgarmentCompositions] = useState([]);
 	const [warehouses, setwarehouses] = useState([]);
 	const [m3buyerDivisions, setm3buyerDivisions] = useState([]);
-
+	
 	const pinkInputSheetContext = useContext(PinkInputSheetContext);
 	const vsInputSheetContext = useContext(VsInputSheetContext);
-	const [filename, setFileName] = useState('Select PO File (Excel)');
+	const [filename, setFileName] = useState('Select AA Sheet File');
 	const [selectedWareHouse, setSelectedWarehouse] = useState<any>('');
 	const [selectedWareHouseForLine, setSelectedWarehouseForLine] = useState<any>('');
+	const [selectedPackMethodForLine, setSelectedPackMethodForLine] = useState<any>('');
 	const [selectedMerchandiser, setselectedMerchandiser] = useState<any>('');
 	const [selectedPlanner, setselectedPlanner] = useState<any>('');
 	const [selectedBuyerDivisions, setBuyerDivisions] = useState<any>('');
@@ -75,6 +75,8 @@ const Step2Component = () => {
 	const [selectedStyleData, setSelectedStyleData] = useState<any>({newLines: [],});
 	const [upOLRDATASET, setupOLRDATASET] = useState<any>([]);
 	const [requestDelDate, setrequestDelDate] = useState('');
+	const [customerDelDate, setcustomerDelDate] = useState('');
+	const [plannerDelDate, setplannerDelDate] = useState('');
 	const [selectedSeasonCode, setselectedSeasonCode] = useState<any>('');
 	const [selectedYearCode, setselectedYearCode] = useState<any>('');
 	const [selectedInseam, setselectedInseam] = useState('');
@@ -87,7 +89,7 @@ const Step2Component = () => {
 	const COColors: any[] = [];
 
 	const handleClose = () => setOpenPackingModal(false);
-	const [uniq_linekey, setuniq_linekey] = useState<any>(0);
+	const [uniq_linekey, setuniq_linekey] = useState<any>('');
 
 	const changeMerchandiser = (id) => setselectedMerchandiser(id);
 	const changePlanner = (id) => setselectedPlanner(id);
@@ -102,25 +104,25 @@ const Step2Component = () => {
 
 	useEffect(() => {
 		async function fetchData() {
-			const merchandisers = await getMerchandiser('ARIT');
+			const merchandisers = await getMerchandiser('PVHTO');
 			setMerchandisers(merchandisers);
 			
-			const planners = await getPlanners('ARIT');
+			const planners = await getPlanners('PVHTO');
 			setplanners(planners);
 			
-			const buyerDivisions = await getBuyerDivisions('ARIT');
+			const buyerDivisions = await getBuyerDivisions('PVHTO');
 			setbuyerDivisions(buyerDivisions);
 
 			const leadFactories = await getLeadFactories();
 			setleadFactories(leadFactories);
 
-			const garmentCompositions = await getGarmentCompositions('ARIT');
+			const garmentCompositions = await getGarmentCompositions('PVHTO');
 			setgarmentCompositions(garmentCompositions);
 
-			const warehouses = await getWarehouses('ARIT');
+			const warehouses = await getWarehouses('PVHTO');
 			setwarehouses(warehouses);
 
-			const m3buyerDivisions = await getM3BuyerDivisions('ARIT');
+			const m3buyerDivisions = await getM3BuyerDivisions('PVHTO');
 			setm3buyerDivisions(m3buyerDivisions);
 
 		}
@@ -137,181 +139,239 @@ const Step2Component = () => {
 		setSelectedWarehouseForLine(id);
 	};
 
-
-	function qtycalculate(val: string)
-	{
-		if(val !== '')
-		{
-			var y: number = +val;
-
-			var cal: number = (y / 100)*102;
-
-			return Math.round(cal);
-		}
-		else
-		{
-			return '';
-		}
-	}
-
-	function qtytonumber(val: string)
-	{
-		if(val !== '')
-		{
-			var y: number = +val;
-
-			var cal: number = (y / 100)*102;
-
-			return y;
-		}
-		else
-		{
-			return 0;
-		}
-	}
+	const onPackMethodChangeForLine = (id: string) => {
+		//id == 1 ? setselectedLeadFactory(1) : setselectedLeadFactory(2);
+		setSelectedPackMethodForLine(id);
+	};
 
 	//read OLR file
 	const onFileSelect = async (e) => {
+
+		if(pinkInputSheetContext.style.length < 1)
+		{
+			alert('Please Select/Sync Style and BOM.');
+			return;
+		}
+
 		const files = e.target.files;
 		// await setisFileReading(true);
 		await setFileName(files[0].name);
-
-		let file_name = files[0].name;
 
 		const reader = new FileReader();
 		const rABS = !!reader.readAsBinaryString;
 
 		reader.onload = async (ee: any) => {
 			const bstr = ee.target.result;
-			const wb = await XLSX.read(bstr, { type: rABS ? 'binary' : 'array',sheetStubs:true });
-			let first_sheet_name = wb.SheetNames[0];
-			const sheet = wb.Sheets[first_sheet_name];
-			//let cell = sheet['B2'].v;
-
+			const wb = await XLSX.read(bstr, { type: rABS ? 'binary' : 'array' });
+			const sheet = wb.Sheets['AA'];
 			if (sheet) {
 				let sheetStyles: any = [];
-				
-				let styleno = sheet['G2'].v;
-				let article = sheet['A2'].v;
-				let article_desc = sheet['B2'].v;
-				let country_date = convertExcelDateToJsLocaleDateString(sheet['N2'].v);
-				let ship_to = sheet['P2'].v;
-				let transport = sheet['R2'].v;
- 
-				let size_headers = {
-					size1:(typeof sheet['D4'].v === 'undefined') ? '' : sheet['D4'].v,
-					size2:(typeof sheet['E4'].v === 'undefined') ? '' : sheet['E4'].v,
-					size3:(typeof sheet['G4'].v === 'undefined') ? '' : sheet['G4'].v,
-					size4:(typeof sheet['I4'].v === 'undefined') ? '' : sheet['I4'].v,
-					size5:(typeof sheet['J4'].v === 'undefined') ? '' : sheet['J4'].v,
-					size6:(typeof sheet['K4'].v === 'undefined') ? '' : sheet['K4'].v,
-					size7:(typeof sheet['L4'].v === 'undefined') ? '' : sheet['L4'].v,
-					size8:(typeof sheet['M4'].v === 'undefined') ? '' : sheet['M4'].v,
-					size9:(typeof sheet['N4'].v === 'undefined') ? '' : sheet['N4'].v,
-					size10:(typeof sheet['O4'].v === 'undefined') ? '' : sheet['O4'].v,
-					size11:(typeof sheet['P4'].v === 'undefined') ? '' : sheet['P4'].v,
-					size12:(typeof sheet['Q4'].v === 'undefined') ? '' : sheet['Q4'].v,
-					size13:(typeof sheet['R4'].v === 'undefined') ? '' : sheet['R4'].v,
-					size14:(typeof sheet['S4'].v === 'undefined') ? '' : sheet['S4'].v,
-					}
-
-					let pono = file_name.match("PO(.*)Release");
-					
-
-				for (let i = 5; i < 100; i++) {
-
-					let value_color = (typeof sheet['A'+i.toString()].v === 'undefined') ? '' : sheet['A'+i.toString()].v;
-
-					if (value_color !== '') {
-
-						let shipcode = getShiptoAritzia(ship_to);
-
-						var size1=qtycalculate((typeof sheet['D'+i.toString()].v === 'undefined') ? '' : sheet['D'+i.toString()].v);
-						var size2=qtycalculate((typeof sheet['E'+i.toString()].v === 'undefined') ? '' : sheet['E'+i.toString()].v);
-						var size3=qtycalculate((typeof sheet['G'+i.toString()].v === 'undefined') ? '' : sheet['G'+i.toString()].v);
-						var size4=qtycalculate((typeof sheet['I'+i.toString()].v === 'undefined') ? '' : sheet['I'+i.toString()].v);
-						var size5=qtycalculate((typeof sheet['J'+i.toString()].v === 'undefined') ? '' : sheet['J'+i.toString()].v);
-						var size6=qtycalculate((typeof sheet['K'+i.toString()].v === 'undefined') ? '' : sheet['K'+i.toString()].v);
-						var size7=qtycalculate((typeof sheet['L'+i.toString()].v === 'undefined') ? '' : sheet['L'+i.toString()].v);
-						var size8=qtycalculate((typeof sheet['M'+i.toString()].v === 'undefined') ? '' : sheet['M'+i.toString()].v);
-						var size9=qtycalculate((typeof sheet['N'+i.toString()].v === 'undefined') ? '' : sheet['N'+i.toString()].v);
-						var size10=qtycalculate((typeof sheet['O'+i.toString()].v === 'undefined') ? '' : sheet['O'+i.toString()].v);
-						var size11=qtycalculate((typeof sheet['P'+i.toString()].v === 'undefined') ? '' : sheet['P'+i.toString()].v);
-						var size12=qtycalculate((typeof sheet['Q'+i.toString()].v === 'undefined') ? '' : sheet['Q'+i.toString()].v);
-						var size13=qtycalculate((typeof sheet['R'+i.toString()].v === 'undefined') ? '' : sheet['R'+i.toString()].v);
-						var size14=qtycalculate((typeof sheet['S'+i.toString()].v === 'undefined') ? '' : sheet['S'+i.toString()].v);
-
-						var size_total = qtycalculate((typeof sheet['T'+i.toString()].v === 'undefined') ? '' : sheet['T'+i.toString()].v);
-
-
-						sheetStyles.push({
-							id:i,
-							newline: 'False',
-							productionwarehouse: '',
-							destination: shipcode,
-							style:styleno,
-							rddc:'',
-							rddp:'',
-							fobd:'',
-							ndcd:'',
-							pcdd:'',
-							color:value_color,
-							vpono:pono[1],
-							cpono:pono[1],
-							deliverymethod:transport,
-							salesprice:'',
-							deliveryterm:'Free on Board-FOB',
-							packmethod:'Single pc packing-SIN',
-							zoption:'',
-							article:article,
-							description:article_desc,
-							warehouse:'',
-							countrydate:country_date,
-							shipto:shipcode,
-							modeoftransport:transport,
-							size1:size1,
-							size2:size2,
-							size3:size3,
-							size4:size4,
-							size5:size5,
-							size6:size6,
-							size7:size7,
-							size8:size8,
-							size9:size9,
-							size10:size10,
-							size11:size11,
-							size12:size12,
-							size13:size13,
-							size14:size14,
-							sizetotal:size_total,
-						});
-
-					}
-					else
-					{
-						break;
-					}
-				  }
-
+				const sheetData = XLSX.utils.sheet_to_json(sheet, {
+					header: 1,
+					blankrows: false,
+					defval: '',
+				});
+				//console.log(sheetData[0])
+				const headerRow: any = sheetData.splice(0, 1)[0];
+				//console.log(sheetData.splice(0, 1))
+				for (let i in headerRow) {
+					headerRow[i] = headerRow[i].trim();
+				}
 
 				//sheetData = OLR 
 
-				if (sheetStyles.length > 0) {
-					
+				sheetData.forEach((line: any) => {
+					let obj: any = {};
 
+					for (let i in headerRow) {
+						obj[headerRow[i]] = line[i];
+					}
+
+					if (obj['**Global Style'].toString().includes(pinkInputSheetContext.style)) {
+						
+						//Not usefull
+						if (!isNaN(obj['In DC Date']) && obj['In DC Date'] !== '') {
+							obj['In DC Date'] = convertExcelDateToJsLocaleDateString( obj['In DC Date']);
+						}
+
+						if (!isNaN(obj['Need By']) && obj['Need By'] !== '') {
+							obj['Need By'] = convertExcelDateToJsLocaleDateString(obj['Need By']);
+						}
+
+						sheetStyles.push(obj);
+					}
+				});
+
+
+				let sheetStyles_converted: any = [];
+
+		
+			const masterColorKeys = sheetStyles.filter((l) => l['**Color']).map(
+					(l) => l['**Color'] + l['Buy Plan'] + l['Size']
+				);
+			const uniquemasterColorKeys = [...new Set([...masterColorKeys])];
+
+			uniquemasterColorKeys.forEach((code) => {
+				const selectedColorLines = sheetStyles.filter(
+					(l) => l['**Color'] + l['Buy Plan'] + l['Size'] == code
+				);
+ 
+				let temp_size1,temp_size2,temp_size3,temp_size4,temp_size5,temp_size6,temp_size7,temp_size8,temp_size9,temp_size10,
+				temp_size11, temp_size12,temp_size13,temp_size14,temp_size15,temp_size16,temp_size17,temp_size18,temp_size19;
+
+				selectedColorLines.forEach((l) => {
+					
+					const tempSize = l['Size']
+						.toUpperCase()
+						.trim();
+
+					if (tempSize.toUpperCase() === ('1SZ')) {
+						temp_size1 = l['Qty'];
+					} else if (tempSize.toUpperCase() === ('1X')) {
+						temp_size2 = l['Qty'];
+					} else if (tempSize.toUpperCase() === ('1XL')) {
+						temp_size3 = l['Qty'];
+					} else if (tempSize.toUpperCase() === ('2X')) {
+						temp_size4 = l['Qty'];
+					} else if (tempSize.toUpperCase() === ('2XL')) {
+						temp_size5 = l['Qty'];
+					} else if (tempSize.toUpperCase() === ('3X')) {
+						temp_size6 = l['Qty'];
+					} else if (tempSize.toUpperCase() === ('3XL')) {
+						temp_size7 = l['Qty'];
+					} else if (tempSize.toUpperCase() === ('4X')) {
+						temp_size8 = l['Qty'];
+					} else if (tempSize.toUpperCase() === ('4XL')) {
+						temp_size9 = l['Qty'];
+					} else if (tempSize.toUpperCase() === ('L')) {
+						temp_size10 = l['Qty'];
+					} else if (tempSize.toUpperCase() === ('M')) {
+						temp_size11 = l['Qty'];
+					} else if (tempSize.toUpperCase() === ('S')) {
+						temp_size12 = l['Qty'];
+					} else if (tempSize.toUpperCase() === ('XL')) {
+						temp_size13 = l['Qty'];
+					} else if (tempSize.toUpperCase() === ('XS')) {
+						temp_size14 = l['Qty'];
+					} else if (tempSize.toUpperCase() === ('30')) {
+						temp_size15 = l['Qty'];
+					} else if (tempSize.toUpperCase() === ('32')) {
+						temp_size16 = l['Qty'];
+					} else if (tempSize.toUpperCase() === ('34')) {
+						temp_size17 = l['Qty'];
+					} else if (tempSize.toUpperCase() === ('36')) {
+						temp_size18 = l['Qty'];
+					} else if (tempSize.toUpperCase() === ('38')) {
+						temp_size19 = l['Qty'];
+					}
+
+					const SIZE_1SZ = temp_size1 > 0 ? temp_size1 : 0;
+					const SIZE_1X = temp_size2 > 0 ? temp_size2 : 0;
+					const SIZE_1XL = temp_size3 > 0 ? temp_size3 : 0;
+					const SIZE_2X = temp_size4 > 0 ? temp_size4 : 0;
+					const SIZE_2XL = temp_size5 > 0 ? temp_size5 : 0;
+					const SIZE_3X = temp_size6 > 0 ? temp_size6 : 0;
+					const SIZE_3XL = temp_size7 > 0 ? temp_size7 : 0;
+					const SIZE_4X = temp_size8 > 0 ? temp_size8 : 0;
+					const SIZE_4XL = temp_size9 > 0 ? temp_size9 : 0;
+					const SIZE_L = temp_size10 > 0 ? temp_size10 : 0;
+					const SIZE_M = temp_size11 > 0 ? temp_size11 : 0;
+					const SIZE_S = temp_size12 > 0 ? temp_size12 : 0;
+					const SIZE_XL = temp_size13 > 0 ? temp_size13 : 0;
+					const SIZE_XS = temp_size14 > 0 ? temp_size14 : 0;
+					const SIZE_30 = temp_size15 > 0 ? temp_size15 : 0;
+					const SIZE_32 = temp_size16 > 0 ? temp_size16 : 0;
+					const SIZE_34 = temp_size17 > 0 ? temp_size17 : 0;
+					const SIZE_36 = temp_size18 > 0 ? temp_size18 : 0;
+					const SIZE_38 = temp_size19 > 0 ? temp_size19 : 0;
+	
+					sheetStyles_converted.push({
+						id:l['**Color'] + l['Buy Plan'] + l['Size'],
+						newline: 'False',
+						productionwarehouse: '',
+						destination: l['**Ship To'],
+						style:l['**Global Style'],
+						rddc:'',
+						rddp:'',
+						fobd:'',
+						ndcd:l['Need By'],
+						pcdd:'',
+						color:l['**Color Descr']+l['**Color']+l['**NRF'],
+						vpono:l['AA'],
+						cpono:'',
+						deliverymethod:'SEA',
+						salesprice:'',
+						deliveryterm:'Free on Board-FOB',
+						packmethod:l['**Color'],
+						zoption:'',
+						article:'',
+						description:'',
+						warehouse:'',
+						countrydate:'',
+						shipto:l['**Ship To'],
+						modeoftransport:'',
+						SIZE_1SZ:SIZE_1SZ,
+						SIZE_1X:SIZE_1X,
+						SIZE_1XL:SIZE_1XL,
+						SIZE_2X:SIZE_2X,
+						SIZE_2XL:SIZE_2XL,
+						SIZE_3X:SIZE_3X,
+						SIZE_3XL:SIZE_3XL,
+						SIZE_4X:SIZE_4X,
+						SIZE_4XL:SIZE_4XL,
+						SIZE_L:SIZE_L,
+						SIZE_M:SIZE_M,
+						SIZE_S:SIZE_S,
+						SIZE_XL:SIZE_XL,
+						SIZE_XS:SIZE_XS,
+						SIZE_30:SIZE_30,
+						SIZE_32:SIZE_32,
+						SIZE_34:SIZE_34,
+						SIZE_36:SIZE_36,
+						SIZE_38:SIZE_38,
+						TOTALQTY: parseInt(SIZE_1SZ) + 
+						parseInt(SIZE_1X) + 
+						parseInt(SIZE_1XL) + 
+						parseInt(SIZE_2X) + 
+						parseInt(SIZE_2XL) + 
+						parseInt(SIZE_3X) + 
+						parseInt(SIZE_3XL) + 
+						parseInt(SIZE_4X) + 
+						parseInt(SIZE_4XL) + 
+						parseInt(SIZE_L) + 
+						parseInt(SIZE_M) + 
+						parseInt(SIZE_S) + 
+						parseInt(SIZE_XL) + 
+						parseInt(SIZE_XS) + 
+						parseInt(SIZE_30) + 
+						parseInt(SIZE_32) + 
+						parseInt(SIZE_34) + 
+						parseInt(SIZE_36) + 
+						parseInt(SIZE_38),	
+					});
+
+				});
+
+				
+			});
+
+		 
+				if (sheetStyles_converted.length > 0) {
+					
 					//Get season based on season code (OLR)
-					const seasonName = getSeasonAritzia(styleno);
+					//const seasonName = getSeasonPink(sheetStyles[0][ecvisionHeaderNames.SEASON]);
+					const seasonName= pinkInputSheetContext.season;
 
 					let uniqueStylesWithData = {
-						styleNo: styleno,
+						styleNo: pinkInputSheetContext.style,
 						VERSION: '',
 						itemGroup: seasonName,
 						season: seasonName,
 						// purchasingGroup: shipDateFilteredStylesData[0]['PURCHASINGGROUP'],
 						purchasingGroup: '',
 						// lines: shipDateFilteredStylesData,
-						newLines: sheetStyles,
-						sizeheaders:size_headers,
+						lines: sheetStyles,
+						newLines:sheetStyles_converted,
 						wareHouse: '',
 						destination: '',
 						deliveryMethod: '',
@@ -320,99 +380,154 @@ const Step2Component = () => {
 						packMethod: '',
 						buyerDivision: '',
 						leadFactory: '',
-						MASTSTYLEDESC: article_desc
+						MASTSTYLEDESC: sheetStyles[0]['**Style Descr']
 					};
+
+					pinkInputSheetContext.changeGenericNo(''
+						//sheetStyles[0][ecvisionHeaderNames.GENERICNO]
+					);
+					//changeSelectedStyleNo(uniqueStylesWithData);
+
 					setSelectedStyleData(uniqueStylesWithData);
-					pinkInputSheetContext.changeGenericNo('');
+
+					alert(sheetStyles.length.toString()+' No of Related Rows Found in AA Sheet.');
 					
 				} else {
 					alert('No Style ' + pinkInputSheetContext.style);
 				}
 			} else {
-				alert('No Sheets in Order Report');
+				alert('No Sheet named AA');
 			}
 		};
+
 		if (rABS) reader.readAsBinaryString(files[0]);
-		else reader.readAsArrayBuffer(files[0]);
+		else reader.readAsArrayBuffer(files[0]); 
+		
 	};
 
-	const onStyleLineChangeClick = async (id) => {
-		// setShowStyle(false); 
-		
+	const onStyleLineChangeClick = async (masterColorKey) => {
+		// setShowStyle(false);
 		setOpenPackingModal(true);
-		setuniq_linekey(id);
+		setuniq_linekey(masterColorKey);
 		
-	};
-
-	const onUpdateDelDateCustomerClicked = async () => {
-		if(requestDelDate.length === 0)
-		{
-			alert('Please Select Date?');
-			return;
-		}
-
-		const relevantLine = selectedStyleData.newLines.find(
-			(l) => l.id === uniq_linekey
-		);
-
-		relevantLine.rddc = requestDelDate;
-		relevantLine.rddc = requestDelDate;
-
-		if(relevantLine.deliverymethod === "Sea")
-			{
-				var date1 = new Date(requestDelDate);
-				relevantLine.ndcd = date1.setDate(date1.getDate() + 31);
-			}
-			else if(relevantLine.deliverymethod === "Air")
-			{
-				var date2 = new Date(requestDelDate);
-				relevantLine.ndcd = date2.setDate(date2.getDate() + 7);
-			}
-
-			setSelectedStyleData(selectedStyleData);
-
-			setOpenPackingModal(false);
-
-	};
-
-	const onUpdateDelDatePlannerClicked = async () => {
-		if(requestDelDate.length === 0)
-		{
-			alert('Please Select Date?');
-			return;
-		}
-
-		const relevantLine = selectedStyleData.newLines.find(
-			(l) => l.id === uniq_linekey
-		);
-
-		relevantLine.rddp = requestDelDate;
-
-			setSelectedStyleData(selectedStyleData);
-
-			setOpenPackingModal(false);
-
 	};
 
 	const onUpdatewarehouse = async () => {
 		
-		if(uniq_linekey !== 0)
+		if(uniq_linekey.length > 0)
 		{
-			const wareHouse = await getWarehousesDetail(selectedWareHouseForLine);
+			if(selectedWareHouseForLine.length > 0)
+			{
+				const wareHouse = await getWarehousesDetail(selectedWareHouseForLine);
 
-			const relevantLine = selectedStyleData.newLines.find(
-				(l) => l.id === uniq_linekey
-			);
+				const relevantLine = selectedStyleData.newLines.find(
+					(l) => l.id === uniq_linekey
+				);
 
-			relevantLine.warehouse = wareHouse ? wareHouse[0].name : '';
-			setSelectedStyleData(selectedStyleData);
+				relevantLine.warehouse = wareHouse ? wareHouse[0].name : '';
+				setSelectedStyleData(selectedStyleData);
 
-			setOpenPackingModal(false);
+				setOpenPackingModal(false);
+			}
+			else
+			{
+				alert('Please Select Warehouse?');
+			}
+			
 		}
 		else
 		{
+			alert('Row line Can not identify.');
+		}
+
+	};
+
+	const onUpdatePackMethod = async () => {
+		
+		if(uniq_linekey.length > 0)
+		{
 			
-			alert('Please Select warehouse and data.');
+			 
+			if(selectedPackMethodForLine.length > 0)
+			{
+				const packMethod = selectedPackMethodForLine;
+
+				const relevantLine = selectedStyleData.newLines.find(
+					(l) => l.id === uniq_linekey
+				);
+
+				relevantLine.packmethod = packMethod ? packMethod : '';
+				setSelectedStyleData(selectedStyleData);
+
+				setOpenPackingModal(false);
+			}
+			else
+			{
+				alert('Please Select Packing Method?');
+			}
+
+		}
+		else
+		{
+			alert('Please Select Pack Method and data.');
+		}
+
+	};
+
+	const onUpdateCustomerDelDate = async () => {
+		
+		if(uniq_linekey.length > 0)
+		{
+			
+			 
+			if(customerDelDate.length > 0)
+			{ 
+				const relevantLine = selectedStyleData.newLines.find(
+					(l) => l.id === uniq_linekey
+				);
+
+				relevantLine.rddc = customerDelDate ? customerDelDate : '';
+				setSelectedStyleData(selectedStyleData);
+
+				setOpenPackingModal(false);
+			}
+			else
+			{
+				alert('Please Select Date?');
+			}
+
+		}
+		else
+		{
+			alert('Please Select Pack Method and data.');
+		}
+
+	};
+
+	const onUpdatePlannerDelDate = async () => {
+		
+		if(uniq_linekey.length > 0)
+		{
+			if(plannerDelDate.length > 0)
+			{ 
+				const relevantLine = selectedStyleData.newLines.find(
+					(l) => l.id === uniq_linekey
+				);
+
+				relevantLine.rddp = plannerDelDate ? plannerDelDate : '';
+				setSelectedStyleData(selectedStyleData);
+
+				setOpenPackingModal(false);
+			}
+			else
+			{
+				alert('Please Select Date?');
+			}
+
+		}
+		else
+		{
+			alert('Please Select Pack Method and data.');
 		}
 
 	};
@@ -426,7 +541,7 @@ const Step2Component = () => {
 			resDate.setDate(date.getDate() - 1);
 
 			let weekday: number = resDate.getUTCDay();
-			if (weekday == 0) {
+			if (weekday === 0) {
 				resDate.setDate(resDate.getDate() - 1);
 			}
 		}
@@ -449,9 +564,7 @@ const Step2Component = () => {
 				line.warehouse = wareHouse[0].name;
 			});
 			setSelectedStyleData(cselectedStyleData);
-
-			
-
+ 
 			alert('All Rows updated.');
 
 	};
@@ -507,6 +620,7 @@ const Step2Component = () => {
 			alert('All Rows updated.');
 	};
 
+	//When click download button Code execute from here
 	const onInputSheetDownload = async () => {
 
 		if(selectedMerchandiser.length === 0)
@@ -545,6 +659,12 @@ const Step2Component = () => {
 			return;
 		}
 
+		if(selectedInseam.length === 0)
+		{
+			alert('Please Select Order Type?');
+			return;
+		}
+
 		if(selectedStyleData.styleNo.length === 0)
 		{
 			alert('Please Select BOM.');
@@ -574,62 +694,66 @@ const Step2Component = () => {
 		const seasoncode = seasonalCodes.find((s) => s.id == selectedSeasonCode)?.name ?? '';
 		const yearcode = yearCodes.find((s) => s.id == selectedYearCode)?.name ?? '';
 
-		let StyleNo = selectedStyleData.styleNo.split('-')[2];
+		let StyleNo = '';
 
-		StyleNo = String(StyleNo).padStart(5, '0');
+		if(selectedPackingType === "S")
+		{
+			StyleNo += selectedStyleData.styleNo.substr(selectedStyleData.styleNo.length - 4);
+		}
+		else if(selectedPackingType === "T")
+		{
+			StyleNo += 'T'+ selectedStyleData.styleNo.substr(selectedStyleData.styleNo.length - 3);
+		}
+		else if(selectedPackingType === "B")
+		{
+			StyleNo += 'B'+ selectedStyleData.styleNo.substr(selectedStyleData.styleNo.length - 3);
+		}
+		else
+		{
+			StyleNo += selectedStyleData.styleNo.substr(selectedStyleData.styleNo.length - 4);
+		}
 
 		
 		let newStyleno = '';
 		
 		
-		newStyleno += 'A';
+		newStyleno += 'T';
+
+		if(selectedInseam === "M")
+		{
+			newStyleno += 'M';
+		}
+		else if(selectedInseam === "O")
+		{
+			newStyleno += 'O';
+		}
+		else if(selectedInseam === "B")
+		{
+			newStyleno += 'B';
+		}
+		else if(selectedInseam === "R")
+		{
+			newStyleno += 'R';
+		}
+		else if(selectedInseam === "C")
+		{
+			newStyleno += 'C';
+		}
+		else
+		{
+			newStyleno += 'T';
+		}
 
 		newStyleno += StyleNo;
 
 		newStyleno += (seasoncode + yearcode);
-
-		
-
+ 
 		const season = selectedStyleData.season;
 
-		const selectedBuyerDivisionName: string = buyerDevisionvalues[0].name;
+		//const selectedBuyerDivisionName: string = buyerDevisionvalues[0].name;
 		
-		// if selected packing type is Single, no nrrd to change the row information,
-		// else if selected packing type is 'Double', copy the individual VPO number with row and then add TOP and Bottom to the end of COlOR column.
-
-
-		// devon Comment This
-		/*
-		if(selectedPackingType === 'D'){
-			
-			//deep cloning array because [..array] not work for complex arrays
-			let newLinesTop:any[]  = JSON.parse(JSON.stringify(selectedStyleData.newLines));
-
-			newLinesTop = newLinesTop.map( l =>{
-				l.MASTCOLORDESC = `${l.MASTCOLORDESC}-TOP`;
-				return l
-			});
-
-			let newLinesBottom:any[]  = JSON.parse(JSON.stringify(selectedStyleData.newLines));
-
-			newLinesBottom = newLinesBottom.map( l =>{
-				l.MASTCOLORDESC = `${l.MASTCOLORDESC}-BTM`;
-				return l
-			});
-
-			let combinedArrays:any[] = [];
-
-			newLinesTop.forEach((line,index) => {
-				combinedArrays.push(line);
-				combinedArrays.push(newLinesBottom[index]);
-			});
-
-			selectedStyleData.newLines = combinedArrays;
-		}
-		*/
-
 		const wb = XLSX.utils.book_new();
-		let template = COTblData_Aritzia(
+		let template = COTblData_Pvhtommy(
 			false,
 			newStyleno,
 			selectedStyleData,
@@ -639,7 +763,7 @@ const Step2Component = () => {
 			planner,
 			garmentComposition,
 			M3buyerDivision,
-			'KNUND-Knit Underwear', //product group
+			'Silhouette', //product group
 			season,
 			Grouptechclass,
 
@@ -699,21 +823,26 @@ const Step2Component = () => {
 				line.deliveryterm,//'DeliveryTerm *'
 				line.packmethod,
 				line.zoption,
-				line.sizetotal,
-				line.size1,
-				line.size2,
-				line.size3,
-				line.size4,
-				line.size5,
-				line.size6,
-				line.size7,
-				line.size8,
-				line.size9,
-				line.size10,
-				line.size11,
-				line.size12,
-				line.size13,
-				line.size14,
+				line.TOTALQTY,
+				line.SIZE_1SZ,
+				line.SIZE_1X,
+				line.SIZE_1XL,
+				line.SIZE_2X,
+				line.SIZE_2XL,
+				line.SIZE_3X,
+				line.SIZE_3XL,
+				line.SIZE_4X,
+				line.SIZE_4XL,
+				line.SIZE_L,
+				line.SIZE_M,
+				line.SIZE_S,
+				line.SIZE_XL,
+				line.SIZE_XS,
+				line.SIZE_30,
+				line.SIZE_32,
+				line.SIZE_34,
+				line.SIZE_36,
+				line.SIZE_38,
 				''//CO
 			];
 			template.push(rowToAdd);
@@ -732,6 +861,7 @@ const Step2Component = () => {
 			}
 		}
 
+		/*
 		const sizeIndex1 = template[14].findIndex(i => i === selectedStyleData.sizeheaders.size1);
 		if (sizeIndex1 > -1) template[14][sizeIndex1] = (selectedStyleData.sizeheaders.size1 === '') ? '' : selectedStyleData.sizeheaders.size1 + getinseamwithsize(selectedInseam);
 
@@ -773,6 +903,7 @@ const Step2Component = () => {
 
 		const sizeIndex14 = template[14].findIndex(i => i === selectedStyleData.sizeheaders.size14);
 		if (sizeIndex14 > -1) template[14][sizeIndex14] = (selectedStyleData.sizeheaders.size14 === '') ? '' : selectedStyleData.sizeheaders.size14 + getinseamwithsize(selectedInseam);
+		*/
 
 		//BOM removing colors not in CO and Thread lines & Dummy in PLM
 		const filteredBOM: any[] = pinkInputSheetContext.BOM.filter((row: any) => {
@@ -825,8 +956,9 @@ const Step2Component = () => {
 		XLSX.utils.book_append_sheet(wb, ws3, 'Operations Track');// changed StNDdize Operations Track to Operations Track 
 		OpsTrackSheetFormat(ws3, opsToTrackData);
 
-		XLSX.writeFile(wb, 'Aritzia Input Sheet.xlsx'); //PINk to VS Sleep
+		XLSX.writeFile(wb, StyleNo+ '_' +season + '_PVH Tommy Input Sheet.xlsx'); //PINk to VS Sleep
 
+	
 	};
 
 	//On Thread sheet upload
@@ -871,7 +1003,7 @@ const Step2Component = () => {
 
 			//Get all lines from the Thread Master
 			const response = await getRmColorThread(true);
-			if (response.status != 200 && response.status != 201) {
+			if (response.status !== 200 && response.status !== 201) {
 				setThreadStatus(null);
 				const error = await response.json();
 				console.log(error.message);
@@ -999,6 +1131,7 @@ const Step2Component = () => {
 							<Grid item xs={4}>
 								<DropDownComponent
 									selectedField={selectedGarmentCompositions}
+									//data={garmentCompositionPink}
 									data={garmentCompositions}
 									onSelectChange={changeGarmentCom}
 									fieldName='Garment Compositions'
@@ -1008,6 +1141,7 @@ const Step2Component = () => {
 								<DropDownComponent
 									selectedField={selectedBuyerDivisions}
 									data={buyerDivisions}
+									//data={divisionCodes}
 									onSelectChange={changeBuyerDivision}
 									fieldName='Buyer Division'
 								/>
@@ -1033,7 +1167,7 @@ const Step2Component = () => {
 									selectedField={selectedInseam}
 									data={inseams}
 									onSelectChange={changeInseam}
-									fieldName='Inseam'
+									fieldName='Order Type'
 								/>
 							</Grid>
 							<Grid item xs={3}>
@@ -1090,8 +1224,9 @@ const Step2Component = () => {
 				</div>
 			</div>
 
+
 			<div style={{ marginTop: '2vw', marginRight: 10 }}>
-				<table className='table table-bordered table-sm' style={{fontSize:"12px"}}>
+			<table className='table table-bordered table-sm' style={{fontSize:"12px"}}>
 					<thead>
 						<tr>
 							<th scope='col'>Color</th>
@@ -1177,7 +1312,7 @@ const Step2Component = () => {
 
 				<DropDownComponent 
 				fieldName='Warehouse' 
-				data={vsInputSheetContext.warehouses}
+				data={warehouses}
 				onSelectChange={onWareHouseChangeForLine}
 				selectedField={selectedWareHouseForLine} />
 
@@ -1192,17 +1327,14 @@ const Step2Component = () => {
 				</Button>
 
 				<br/>
+				<hr/>
 				<br/>
 
-				<input style={{ height: '2.5vw' }}
-					name='date'
-					type='date'
-					value={requestDelDate}
-					onChange={(e) => {
-						const { value } = e.target;
-						setrequestDelDate(value);
-					}}
-					className='form-control'
+				<DropDownComponent 
+				fieldName='pack method' 
+				data={[{id:'SIN-Single pc packing',name:'SIN-Single pc packing'},{id:'30P-30 pcs per 1 poly bag',name:'30P-30 pcs per 1 poly bag'}]}
+				onSelectChange={onPackMethodChangeForLine}
+				selectedField={selectedPackMethodForLine}
 				/>
 
 				<br/>
@@ -1210,34 +1342,56 @@ const Step2Component = () => {
 				<Button
 					variant='contained'
 					color='secondary'
-					onClick={onUpdateDelDateCustomerClicked}
+					onClick={onUpdatePackMethod}
 					
 				>
-					Update Customer Delivery Date
+					Update Pack Method
 				</Button>
 
-				<br/><br/>
+				<br/>
+				<hr/>
+				<br/>
 
 				<input style={{ height: '2.5vw' }}
 					name='date'
 					type='date'
-					value={requestDelDate}
+					value={customerDelDate}
 					onChange={(e) => {
 						const { value } = e.target;
-						setrequestDelDate(value);
+						setcustomerDelDate(value);
 					}}
-					className='form-control'
-				/>
-
-								<br/><br/>
+					className='form-control' />
 
 				<Button
 					variant='contained'
 					color='secondary'
-					onClick={onUpdateDelDatePlannerClicked}
+					onClick={onUpdateCustomerDelDate}
 					
 				>
-					Update Planner Delivery Date
+					Customer Delivery Date
+				</Button>
+
+				<br/>
+				<hr/>
+				<br/>
+
+				<input style={{ height: '2.5vw' }}
+					name='date'
+					type='date'
+					value={plannerDelDate}
+					onChange={(e) => {
+						const { value } = e.target;
+						setplannerDelDate(value);
+					}}
+					className='form-control' />
+
+				<Button
+					variant='contained'
+					color='secondary'
+					onClick={onUpdatePlannerDelDate}
+					
+				>
+					Planner Delivery Date
 				</Button>
 
 			</div>

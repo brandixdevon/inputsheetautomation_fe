@@ -240,7 +240,7 @@ function ReadBOM(props: any) {
 										value={year}
 										disabled={gettingData}
 										onChange={handleChange}
-										style={{ marginBottom: 20 }}
+										style={{ marginBottom: 20,fontSize:'12px' }}
 									>
 										{years.map((year) => {
 											return (
@@ -262,7 +262,7 @@ function ReadBOM(props: any) {
 										value={type}
 										disabled={gettingData}
 										onChange={handleChange}
-										style={{ marginBottom: 20 }}
+										style={{ marginBottom: 20,fontSize:'12px' }}
 									>
 										<MenuItem key='a1' value='Assortment'>
 											Assortment
@@ -300,7 +300,7 @@ function ReadBOM(props: any) {
 										name='season'
 										value={selectedSeason}
 										onChange={handleChange}
-										style={{ marginBottom: 10 }}
+										style={{ marginBottom: 10,fontSize:'12px' }}
 									>
 										{selectedstylesData.map((style, index) => {
 											return (
@@ -329,6 +329,7 @@ function ReadBOM(props: any) {
 									display: 'inline-block',
 									marginTop: 10,
 									marginBottom: 15,
+									fontSize:'12px'
 								}}
 								name='btnstyle'
 								onClick={handleClickGetBOMVersions}
@@ -345,7 +346,7 @@ function ReadBOM(props: any) {
 										name='bomversion'
 										value={selectedBOMId}
 										onChange={handleChange}
-										style={{ marginBottom: 10 }}
+										style={{ marginBottom: 10,fontSize:'12px' }}
 									>
 										{bomVersions.map((bomv, index) => {
 											return (

@@ -102,6 +102,13 @@ const Step2Component = () => {
 
 	//read OLR file
 	const onFileSelect = async (e) => {
+
+		if(pinkInputSheetContext.style.length < 1)
+		{
+			alert('Please Select/Sync Style and BOM.');
+			return;
+		}
+
 		const files = e.target.files;
 		// await setisFileReading(true);
 		await setFileName(files[0].name);
@@ -186,6 +193,8 @@ const Step2Component = () => {
 						sheetStyles[0][ecvisionHeaderNames.GENERICNO]
 					);
 					changeSelectedStyleNo(uniqueStylesWithData);
+
+					alert(sheetStyles.length.toString()+' No of Related Rows Found in OLR.');
 					
 				} else {
 					alert('No Style ' + pinkInputSheetContext.style);
@@ -496,6 +505,8 @@ const Step2Component = () => {
 
 		selectedStyleData.newLines = upOLRDATASET.newLines;
 		
+		/* Deveon Comment This
+
 		if(selectedMerchandiser.length === 0)
 		{
 			alert('Please Select Merchandiser?');
@@ -519,6 +530,7 @@ const Step2Component = () => {
 			alert('Please Select Garment Composition?');
 			return;
 		}
+		*/
 
 		if(selectedBuyerDivisions.length === 0)
 		{
@@ -526,14 +538,19 @@ const Step2Component = () => {
 			return;
 		}
 
+		/* Devon Comment This
+
 		if(selectedM3BuyerDivision.length === 0)
 		{
 			alert('Please Select M3 Buyer Division?');
 			return;
 		}
+		*/
 
 		const buyerDevisionvalues = await getBuyerDivisionsDetail(selectedBuyerDivisions);
 		const buyerDivision = buyerDevisionvalues[0].code;
+
+		/* Devon Comment This
 
 		const M3values = await getM3BuyerDivisionDetail(selectedM3BuyerDivision);
 		const M3buyerDivision = M3values[0].name;
@@ -550,6 +567,8 @@ const Step2Component = () => {
 
 		const leadFactoryvalues = await getLeadFactoriesDetail(selectedLeadFactories);
 		const leadFactory = leadFactoryvalues[0].name;
+
+		*/
 
 		const seasoncode = seasonalCodes.find((s) => s.id == selectedSeasonCode)?.name ?? '';
 		const yearcode = yearCodes.find((s) => s.id == selectedYearCode)?.name ?? '';
@@ -630,15 +649,15 @@ const Step2Component = () => {
 			false,
 			newStyleno,
 			selectedStyleData,
-			leadFactory,
+			'',//leadFactory,
 			buyerDivision,
-			merchandiser,
-			planner,
-			garmentComposition,
-			M3buyerDivision,
+			'',//merchandiser,
+			'',//planner,
+			'',//garmentComposition,
+			'',//M3buyerDivision,
 			'KNUND-Knit Underwear', //product group
 			season,
-			Grouptechclass,
+			'',//Grouptechclass,
 			//HeaderSeason
 
 		);
@@ -967,7 +986,7 @@ const Step2Component = () => {
 							}}
 							spacing={2}
 						>
-							<Grid item xs={4}>
+							<Grid hidden item xs={4}>
 								<DropDownComponent
 									selectedField={selectedMerchandiser}
 									data={vsInputSheetContext.merchandisers}
@@ -975,7 +994,7 @@ const Step2Component = () => {
 									fieldName='Merchandisers'
 								/>
 							</Grid>
-							<Grid item xs={4}>
+							<Grid hidden item xs={4}>
 								<DropDownComponent
 									selectedField={selectedPlanner}
 									data={vsInputSheetContext.planners}
@@ -983,7 +1002,7 @@ const Step2Component = () => {
 									fieldName='Planners'
 								/>
 							</Grid>
-							<Grid item xs={4}>
+							<Grid hidden item xs={4}>
 								<DropDownComponent
 									selectedField={selectedLeadFactories}
 									data={vsInputSheetContext.leadFactories}
@@ -991,7 +1010,7 @@ const Step2Component = () => {
 									fieldName='Lead Factories'
 								/>
 							</Grid>
-							<Grid item xs={4}>
+							<Grid hidden item xs={4}>
 								<DropDownComponent
 									selectedField={selectedGarmentCompositions}
 									//data={garmentCompositionPink}
@@ -1041,7 +1060,7 @@ const Step2Component = () => {
 									fieldName='Packing Type'
 								/>
 							</Grid>
-							<Grid item xs={6}>
+							<Grid hidden item xs={6}>
 								<DropDownComponent
 									selectedField={selectedM3BuyerDivision}
 									data={vsInputSheetContext.m3buyerDivisions}
@@ -1089,7 +1108,7 @@ const Step2Component = () => {
 
 
 			<div style={{ marginTop: '2vw', marginRight: 10 }}>
-				<table className='table table-bordered table-sm'>
+				<table className='table table-bordered table-sm' style={{fontSize:'12px'}}>
 					<thead>
 						<tr>
 							<th scope='col'>Color Code</th>
@@ -1186,7 +1205,7 @@ const Step2Component = () => {
 
 				<DropDownComponent 
 				fieldName='pack method' 
-				data={[{id:'pack Single 30',name:'pack Single 30'},{id:'30P-30 pcs per 1 poly bag',name:'30P-30 pcs per 1 poly bag'}]}
+				data={[{id:'SIN-Single pc packing',name:'SIN-Single pc packing'},{id:'30P-30 pcs per 1 poly bag',name:'30P-30 pcs per 1 poly bag'}]}
 				onSelectChange={onPackMethodChangeForLine}
 				selectedField={selectedPackMethodForLine}
 				/>

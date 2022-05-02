@@ -12,7 +12,7 @@ import {
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
 import {
-	getStyleList,
+	getStyleListPvh,
 	getBOMVersions,
 	getBOMandColorData,
 } from '../../Services/data';
@@ -78,7 +78,7 @@ function ReadBOM(props: any) {
 	useEffect(() => {
 		setgettingData(true);
 		async function fetchData() {
-			const stylesres = await getStyleList(year, type);
+			const stylesres = await getStyleListPvh(year, type);
 			setgettingData(false);
 			if (stylesres.status == 200 || stylesres.status == 201) {
 				const styledata = await stylesres.json();
@@ -304,7 +304,7 @@ function ReadBOM(props: any) {
 									>
 										{selectedstylesData.map((style, index) => {
 											return (
-												<MenuItem key={index} value={style.Season} style={{fontSize:'12px'}}>
+												<MenuItem key={index} value={style.Season}>
 													{style.Season}
 												</MenuItem>
 											);
@@ -328,7 +328,9 @@ function ReadBOM(props: any) {
 									zIndex: 1,
 									display: 'inline-block',
 									marginTop: 10,
-									marginBottom: 15,
+									marginBottom: 15
+									,fontSize:'12px'
+									
 								}}
 								name='btnstyle'
 								onClick={handleClickGetBOMVersions}
@@ -349,7 +351,7 @@ function ReadBOM(props: any) {
 									>
 										{bomVersions.map((bomv, index) => {
 											return (
-												<MenuItem key={index} value={bomv.BOMID} style={{fontSize:'12px'}}>
+												<MenuItem key={index} value={bomv.BOMID}>
 													{bomv.BOM} - Version - {bomv.BOMVersion}
 												</MenuItem>
 											);
@@ -373,6 +375,7 @@ function ReadBOM(props: any) {
 									display: 'inline-block',
 									marginTop: 10,
 									marginBottom: 15,
+									fontSize:'12px'
 								}}
 								name='btnstyle'
 								onClick={handleClickGetBOM}
