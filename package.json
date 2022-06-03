@@ -25,7 +25,8 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "^3.4.4",
     "typescript": "^3.9.10",
-    "xlsx": "^0.15.6"
+    "xlsx": "^0.15.6",
+    "xlsx-js-style": "^1.2.0"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -10,7 +10,8 @@ import {
 } from '@material-ui/core';
 import DropDownComponent from '../components/layout/dropdownComponent';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
-import XLSX from 'xlsx';
+//import XLSX from 'xlsx';
+import XLSX from 'xlsx-js-style';
 import {
 	inseams_sleep as inseams,
 	packingTypes,
@@ -211,8 +212,7 @@ const Step2Component = () => {
 					(l) => l['**Color'] + l['Buy Plan'] + l['Size'] == code
 				);
  
-				let temp_size1,temp_size2,temp_size3,temp_size4,temp_size5,temp_size6,temp_size7,temp_size8,temp_size9,temp_size10,
-				temp_size11, temp_size12,temp_size13,temp_size14,temp_size15,temp_size16,temp_size17,temp_size18,temp_size19;
+				let temp_size1,temp_size2,temp_size3,temp_size4,temp_size5,temp_size6,temp_size7,temp_size8,temp_size9,temp_size10;
 
 				selectedColorLines.forEach((l) => {
 					
@@ -220,65 +220,38 @@ const Step2Component = () => {
 						.toUpperCase()
 						.trim();
 
-					if (tempSize.toUpperCase() === ('1SZ')) {
-						temp_size1 = l['Qty'];
-					} else if (tempSize.toUpperCase() === ('1X')) {
-						temp_size2 = l['Qty'];
-					} else if (tempSize.toUpperCase() === ('1XL')) {
-						temp_size3 = l['Qty'];
-					} else if (tempSize.toUpperCase() === ('2X')) {
-						temp_size4 = l['Qty'];
-					} else if (tempSize.toUpperCase() === ('2XL')) {
-						temp_size5 = l['Qty'];
-					} else if (tempSize.toUpperCase() === ('3X')) {
-						temp_size6 = l['Qty'];
-					} else if (tempSize.toUpperCase() === ('3XL')) {
-						temp_size7 = l['Qty'];
-					} else if (tempSize.toUpperCase() === ('4X')) {
-						temp_size8 = l['Qty'];
-					} else if (tempSize.toUpperCase() === ('4XL')) {
-						temp_size9 = l['Qty'];
-					} else if (tempSize.toUpperCase() === ('L')) {
-						temp_size10 = l['Qty'];
-					} else if (tempSize.toUpperCase() === ('M')) {
-						temp_size11 = l['Qty'];
-					} else if (tempSize.toUpperCase() === ('S')) {
-						temp_size12 = l['Qty'];
-					} else if (tempSize.toUpperCase() === ('XL')) {
-						temp_size13 = l['Qty'];
-					} else if (tempSize.toUpperCase() === ('XS')) {
-						temp_size14 = l['Qty'];
-					} else if (tempSize.toUpperCase() === ('30')) {
-						temp_size15 = l['Qty'];
-					} else if (tempSize.toUpperCase() === ('32')) {
-						temp_size16 = l['Qty'];
-					} else if (tempSize.toUpperCase() === ('34')) {
-						temp_size17 = l['Qty'];
-					} else if (tempSize.toUpperCase() === ('36')) {
-						temp_size18 = l['Qty'];
-					} else if (tempSize.toUpperCase() === ('38')) {
-						temp_size19 = l['Qty'];
-					}
-
-					const SIZE_1SZ = temp_size1 > 0 ? temp_size1 : 0;
-					const SIZE_1X = temp_size2 > 0 ? temp_size2 : 0;
-					const SIZE_1XL = temp_size3 > 0 ? temp_size3 : 0;
-					const SIZE_2X = temp_size4 > 0 ? temp_size4 : 0;
-					const SIZE_2XL = temp_size5 > 0 ? temp_size5 : 0;
-					const SIZE_3X = temp_size6 > 0 ? temp_size6 : 0;
-					const SIZE_3XL = temp_size7 > 0 ? temp_size7 : 0;
-					const SIZE_4X = temp_size8 > 0 ? temp_size8 : 0;
-					const SIZE_4XL = temp_size9 > 0 ? temp_size9 : 0;
-					const SIZE_L = temp_size10 > 0 ? temp_size10 : 0;
-					const SIZE_M = temp_size11 > 0 ? temp_size11 : 0;
-					const SIZE_S = temp_size12 > 0 ? temp_size12 : 0;
-					const SIZE_XL = temp_size13 > 0 ? temp_size13 : 0;
-					const SIZE_XS = temp_size14 > 0 ? temp_size14 : 0;
-					const SIZE_30 = temp_size15 > 0 ? temp_size15 : 0;
-					const SIZE_32 = temp_size16 > 0 ? temp_size16 : 0;
-					const SIZE_34 = temp_size17 > 0 ? temp_size17 : 0;
-					const SIZE_36 = temp_size18 > 0 ? temp_size18 : 0;
-					const SIZE_38 = temp_size19 > 0 ? temp_size19 : 0;
+						if (tempSize.toUpperCase() === ('1X')) {
+							temp_size1 = l['Qty'];
+						} else if (tempSize.toUpperCase() === ('2X')) {
+							temp_size2 = l['Qty'];
+						} else if (tempSize.toUpperCase() === ('3X')) {
+							temp_size3 = l['Qty'];
+						} else if (tempSize.toUpperCase() === ('XXS')) {
+							temp_size4 = l['Qty'];
+						} else if (tempSize.toUpperCase() === ('XS')) {
+							temp_size5 = l['Qty'];
+						} else if (tempSize.toUpperCase() === ('S')) {
+							temp_size6 = l['Qty'];
+						} else if (tempSize.toUpperCase() === ('M')) {
+							temp_size7 = l['Qty'];
+						} else if (tempSize.toUpperCase() === ('L')) {
+							temp_size8 = l['Qty'];
+						} else if (tempSize.toUpperCase() === ('XL')) {
+							temp_size9 = l['Qty'];
+						} else if (tempSize.toUpperCase() === ('2XL')) {
+							temp_size10 = l['Qty'];
+						}
+	
+						const SIZE_1X = temp_size1 > 0 ? temp_size1 : 0;
+						const SIZE_2X = temp_size2 > 0 ? temp_size2 : 0;
+						const SIZE_3X = temp_size3 > 0 ? temp_size3 : 0;
+						const SIZE_XXS = temp_size4 > 0 ? temp_size4 : 0;
+						const SIZE_XS = temp_size5 > 0 ? temp_size5 : 0;
+						const SIZE_S = temp_size6 > 0 ? temp_size6 : 0;
+						const SIZE_M = temp_size7 > 0 ? temp_size7 : 0;
+						const SIZE_L = temp_size8 > 0 ? temp_size8 : 0;
+						const SIZE_XL = temp_size9 > 0 ? temp_size9 : 0;
+						const SIZE_2XL = temp_size10 > 0 ? temp_size10 : 0;
 	
 					sheetStyles_converted.push({
 						id:l['**Color'] + l['Buy Plan'] + l['Size'],
@@ -305,44 +278,26 @@ const Step2Component = () => {
 						countrydate:'',
 						shipto:l['**Ship To'],
 						modeoftransport:'',
-						SIZE_1SZ:SIZE_1SZ,
 						SIZE_1X:SIZE_1X,
-						SIZE_1XL:SIZE_1XL,
 						SIZE_2X:SIZE_2X,
-						SIZE_2XL:SIZE_2XL,
 						SIZE_3X:SIZE_3X,
-						SIZE_3XL:SIZE_3XL,
-						SIZE_4X:SIZE_4X,
-						SIZE_4XL:SIZE_4XL,
-						SIZE_L:SIZE_L,
-						SIZE_M:SIZE_M,
-						SIZE_S:SIZE_S,
-						SIZE_XL:SIZE_XL,
+						SIZE_XXS:SIZE_XXS,
 						SIZE_XS:SIZE_XS,
-						SIZE_30:SIZE_30,
-						SIZE_32:SIZE_32,
-						SIZE_34:SIZE_34,
-						SIZE_36:SIZE_36,
-						SIZE_38:SIZE_38,
-						TOTALQTY: parseInt(SIZE_1SZ) + 
-						parseInt(SIZE_1X) + 
-						parseInt(SIZE_1XL) + 
+						SIZE_S:SIZE_S,
+						SIZE_M:SIZE_M,
+						SIZE_L:SIZE_L,
+						SIZE_XL:SIZE_XL,
+						SIZE_2XL:SIZE_2XL,
+						TOTALQTY: parseInt(SIZE_1X) + 
 						parseInt(SIZE_2X) + 
-						parseInt(SIZE_2XL) + 
 						parseInt(SIZE_3X) + 
-						parseInt(SIZE_3XL) + 
-						parseInt(SIZE_4X) + 
-						parseInt(SIZE_4XL) + 
-						parseInt(SIZE_L) + 
-						parseInt(SIZE_M) + 
-						parseInt(SIZE_S) + 
-						parseInt(SIZE_XL) + 
+						parseInt(SIZE_XXS) + 
 						parseInt(SIZE_XS) + 
-						parseInt(SIZE_30) + 
-						parseInt(SIZE_32) + 
-						parseInt(SIZE_34) + 
-						parseInt(SIZE_36) + 
-						parseInt(SIZE_38),	
+						parseInt(SIZE_S) + 
+						parseInt(SIZE_M) + 
+						parseInt(SIZE_L) + 
+						parseInt(SIZE_XL) + 
+						parseInt(SIZE_2XL),	
 					});
 
 				});
@@ -755,10 +710,10 @@ const Step2Component = () => {
 			COColors.push(line.color.toString());
 
 			//Get matching color from BOM Garment Color(last 4 chars) based on Color code(last 4 chars) in OLR
-			const matchingColor: any = pinkInputSheetContext.colorData.find(
-				(c: any) => c.slice(-6) == line.color.toString()
-			);
-			let newColor = matchingColor;
+			//const matchingColor: any = pinkInputSheetContext.colorData.find(
+				//(c: any) => c.slice(-6) == line.color.toString()
+			//);
+			//let newColor = matchingColor;
 
 			// const indexofdeldate = uniquedeliveryDates.findIndex(
 			// 	(l) => l == line.requestDelDate
@@ -789,13 +744,13 @@ const Step2Component = () => {
 				'FALSE', // added NewLine into the sheet
 				line.warehouse,
 				line.destination,
+				line.style,
 				new Date(line.rddc),
 				new Date(line.rddp),
 				new Date(line.fobd), //FOB Date
 				new Date(line.ndcd),
 				new Date(line.pcdd), //PCDDate
 				(selectedInseam.length > 0) ? selectedInseam +'-'+ line.color : line.color,
-				line.style,
 				line.vpono,
 				line.cpono,
 				line.deliverymethod,//'DeliveryMethod *'
@@ -909,6 +864,281 @@ const Step2Component = () => {
 		//Co sheet
 		const ws = XLSX.utils.aoa_to_sheet(template);
 		ws['!cols'] = wscols;
+
+		//==== Input Sheet Validation ====//
+		//Check Style No Format
+        var cell_styleno = ws['B1'].v;
+        if(cell_styleno !== "")
+        {
+          if(cell_styleno.length !== 8)
+          {
+            ws['B1'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+            //error_data.push({sheetname:sheetone_name, cellid:'B1', error:'Style No Length not equal to 8 characters.'});
+          }
+        }
+        else
+        {
+          ws['B1'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B1', error:'Style No Can not be in blank.'});
+        }
+
+        //Check Version ID
+        var cell_versionid = ws['B2'].v;
+        if(RegExp('^[0-9]*$').test(cell_versionid) === false)
+        {
+          ws['B2'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B2', error:'Only Numeric Version ID is allowed.'});
+        }
+
+        //Check Garment Item Desc
+        var cell_itemdesc = ws['B3'].v;
+        if(cell_itemdesc !== "")
+        {
+          if(cell_itemdesc.length > 60)
+          {
+            ws['B3'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+            //error_data.push({sheetname:sheetone_name, cellid:'B3', error:'Garment Item Description Can not be greater than 8 characters.'});
+          }
+        }
+        else
+        {
+          ws['B3'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B3', error:'Garment Item Description Can not be in blank.'});
+        }
+
+        //Check Lead Factory
+        var cell_leadfactory = ws['B4'].v;
+        if(cell_leadfactory !== "")
+        {
+          const buyercode = cell_leadfactory.split("-");
+		  	if(buyercode.includes("-"))
+			{
+				if(buyercode[1].length !== 3)
+				{
+					ws['B4'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B4', error:'Lead Factory Code length must be 3 characters.'});
+				}
+			}
+			else
+			{
+				ws['B4'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+			}
+          
+        }
+        else
+        {
+          ws['B4'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B4', error:'Lead Factory Can not be in blank.'});
+        }
+
+        //Check Buyer
+        var cell_buyer = ws['B5'].v;
+        if(cell_buyer !== "")
+        {
+          const buyercode = cell_buyer.split("-");
+		  	if(buyercode.includes("-"))
+		  	{
+				if(buyercode[1].length !== 10)
+				{
+					ws['B5'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B5', error:'Buyer code length must be 8 characters.'});
+				}
+			}
+			else
+			{
+				ws['B5'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+			}
+        }
+        else
+        {
+          ws['B5'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B5', error:'Buyer Can not be in blank.'});
+        }
+
+        //Check Buyer Division
+        var cell_buyerdiv = ws['B6'].v;
+        if(cell_buyerdiv !== "")
+        {
+          const buyercode = cell_buyerdiv.split("-");
+		  	if(buyercode.includes("-"))
+			{
+				if(buyercode[1].length > 3)
+				{
+					ws['B6'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B6', error:'Buyer Division code length must be 3 characters.'});
+				}
+			}
+			else
+			{
+				ws['B6'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+			}
+          
+        }
+        else
+        {
+          ws['B6'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B6', error:'Buyer Division Can not be in blank.'});
+        }
+
+        //Check Season
+        var cell_season = ws['B8'].v;
+        if(cell_season !== "")
+        {
+          const buyercode = cell_season.split("-");
+		  	if(buyercode.includes("-"))
+			{
+				if(buyercode[1].length > 7)
+				{
+					ws['B8'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B8', error:'Season code length must be 7 characters.'});
+				}
+			}
+			else
+			{
+				ws['B8'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+			}
+          
+        }
+        else
+        {
+          ws['B8'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B8', error:'Season Can not be in blank.'});
+        }
+
+        //Check Product Group
+        var cell_productgroup = ws['B9'].v;
+        if(cell_productgroup !== "")
+        {
+          const buyercode = cell_productgroup.split("-");
+		  
+		  	if(buyercode.includes("-"))
+			{
+				if(buyercode[1].length > 5)
+				{
+					ws['B9'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B9', error:'Product Group code length must be 5 characters.'});
+				}
+			}
+			else
+			{
+				ws['B9'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+			}
+          
+        }
+        else
+        {
+          ws['B9'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B9', error:'Product Group Can not be in blank.'});
+        }
+
+        //Check Merchandiser
+        var cell_merchant = ws['B10'].v;
+        if(cell_merchant !== "")
+        {
+          const buyercode = cell_merchant.split("-");
+		  	if(buyercode.includes("-"))
+			{
+				if(buyercode[1].length > 10)
+				{
+					ws['B10'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B10', error:'Merchandiser code length must be 10 characters.'});
+				}
+			}
+			else
+			{
+				ws['B10'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+			}
+          
+        }
+        else
+        {
+          ws['B10'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B10', error:'Merchandiser Can not be in blank.'});
+        }
+
+        //Check Planner
+        var cell_planner = ws['B11'].v;
+        if(cell_planner !== "")
+        {
+          const buyercode = cell_planner.split("-");
+		  	if(buyercode.includes("-"))
+			{
+				if(buyercode[1].length > 10)
+				{
+					ws['B11'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B11', error:'Planner code length must be 10 characters.'});
+				}
+			}
+			else
+			{
+				ws['B11'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+			}
+          
+        }
+        else
+        {
+          ws['B11'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B11', error:'Planner Can not be in blank.'});
+        }
+
+        //Check Fabric Composition
+        var cell_fabriccomp = ws['B12'].v;
+        if(cell_fabriccomp !== "")
+        {
+          const buyercode = cell_fabriccomp.split("-");
+		  	if(buyercode.includes("-"))
+			{
+				if(buyercode[1].length > 10)
+				{
+					ws['B12'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B12', error:'Fabric Composition code length must be 10 characters.'});
+				}
+			}
+			else
+			{
+				ws['B12'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+			}
+          
+        }
+        else
+        {
+          ws['B12'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B12', error:'Fabric Composition Can not be in blank.'});
+        }
+
+        //Check Style Categorization
+        var cell_stylecat = ws['B13'].v;
+        if(cell_stylecat !== "")
+        {
+          	const buyercode = cell_stylecat.split("-");
+		  	if(buyercode.includes("-"))
+			{
+				if(buyercode[1].length !== 1)
+				{
+					ws['B13'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B13', error:'Style Categorization Letter length must be 1 character.'});
+				}
+				else
+				{
+					if(buyercode[1].match(/^[A-Z]*$/) === false)
+					{
+					ws['B13'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B13', error:'Style Categorization Letter Need to change as Capital Letter.'});
+					}
+				}
+			}
+			else
+			{
+				ws['B13'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+			}
+          
+        }
+        else
+        {
+          ws['B13'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B13', error:'Style Categorization Can not be in blank.'});
+        }
+
 		XLSX.utils.book_append_sheet(wb, ws, 'CO LINE');// changed StNDdize CO to CO Line 
 
 		for (var i = 0; i < 14; i++) {

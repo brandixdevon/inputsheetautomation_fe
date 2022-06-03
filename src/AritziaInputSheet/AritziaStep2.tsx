@@ -186,7 +186,7 @@ const Step2Component = () => {
 			const wb = await XLSX.read(bstr, { type: rABS ? 'binary' : 'array',sheetStubs:true });
 			let first_sheet_name = wb.SheetNames[0];
 			const sheet = wb.Sheets[first_sheet_name];
-			//let cell = sheet['B2'].v;
+			
 
 			if (sheet) {
 				let sheetStyles: any = [];
@@ -651,10 +651,10 @@ const Step2Component = () => {
 			COColors.push(line.color.toString());
 
 			//Get matching color from BOM Garment Color(last 4 chars) based on Color code(last 4 chars) in OLR
-			const matchingColor: any = pinkInputSheetContext.colorData.find(
-				(c: any) => c.slice(-6) == line.color.toString()
-			);
-			let newColor = matchingColor;
+			//const matchingColor: any = pinkInputSheetContext.colorData.find(
+				//(c: any) => c.slice(-6) == line.color.toString()
+			//);
+			//let newColor = matchingColor;
 
 			// const indexofdeldate = uniquedeliveryDates.findIndex(
 			// 	(l) => l == line.requestDelDate
@@ -810,6 +810,281 @@ const Step2Component = () => {
 		//Co sheet
 		const ws = XLSX.utils.aoa_to_sheet(template);
 		ws['!cols'] = wscols;
+
+		//==== Input Sheet Validation ====//
+		//Check Style No Format
+        var cell_styleno = ws['B1'].v;
+        if(cell_styleno !== "")
+        {
+          if(cell_styleno.length !== 8)
+          {
+            ws['B1'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+            //error_data.push({sheetname:sheetone_name, cellid:'B1', error:'Style No Length not equal to 8 characters.'});
+          }
+        }
+        else
+        {
+          ws['B1'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B1', error:'Style No Can not be in blank.'});
+        }
+
+        //Check Version ID
+        var cell_versionid = ws['B2'].v;
+        if(RegExp('^[0-9]*$').test(cell_versionid) === false)
+        {
+          ws['B2'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B2', error:'Only Numeric Version ID is allowed.'});
+        }
+
+        //Check Garment Item Desc
+        var cell_itemdesc = ws['B3'].v;
+        if(cell_itemdesc !== "")
+        {
+          if(cell_itemdesc.length > 60)
+          {
+            ws['B3'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+            //error_data.push({sheetname:sheetone_name, cellid:'B3', error:'Garment Item Description Can not be greater than 8 characters.'});
+          }
+        }
+        else
+        {
+          ws['B3'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B3', error:'Garment Item Description Can not be in blank.'});
+        }
+
+        //Check Lead Factory
+        var cell_leadfactory = ws['B4'].v;
+        if(cell_leadfactory !== "")
+        {
+          const buyercode = cell_leadfactory.split("-");
+		  	if(buyercode.includes("-"))
+			{
+				if(buyercode[1].length !== 3)
+				{
+					ws['B4'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B4', error:'Lead Factory Code length must be 3 characters.'});
+				}
+			}
+			else
+			{
+				ws['B4'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+			}
+          
+        }
+        else
+        {
+          ws['B4'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B4', error:'Lead Factory Can not be in blank.'});
+        }
+
+        //Check Buyer
+        var cell_buyer = ws['B5'].v;
+        if(cell_buyer !== "")
+        {
+          const buyercode = cell_buyer.split("-");
+		  	if(buyercode.includes("-"))
+		  	{
+				if(buyercode[1].length !== 10)
+				{
+					ws['B5'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B5', error:'Buyer code length must be 8 characters.'});
+				}
+			}
+			else
+			{
+				ws['B5'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+			}
+        }
+        else
+        {
+          ws['B5'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B5', error:'Buyer Can not be in blank.'});
+        }
+
+        //Check Buyer Division
+        var cell_buyerdiv = ws['B6'].v;
+        if(cell_buyerdiv !== "")
+        {
+          const buyercode = cell_buyerdiv.split("-");
+		  	if(buyercode.includes("-"))
+			{
+				if(buyercode[1].length > 3)
+				{
+					ws['B6'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B6', error:'Buyer Division code length must be 3 characters.'});
+				}
+			}
+			else
+			{
+				ws['B6'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+			}
+          
+        }
+        else
+        {
+          ws['B6'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B6', error:'Buyer Division Can not be in blank.'});
+        }
+
+        //Check Season
+        var cell_season = ws['B8'].v;
+        if(cell_season !== "")
+        {
+          const buyercode = cell_season.split("-");
+		  	if(buyercode.includes("-"))
+			{
+				if(buyercode[1].length > 7)
+				{
+					ws['B8'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B8', error:'Season code length must be 7 characters.'});
+				}
+			}
+			else
+			{
+				ws['B8'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+			}
+          
+        }
+        else
+        {
+          ws['B8'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B8', error:'Season Can not be in blank.'});
+        }
+
+        //Check Product Group
+        var cell_productgroup = ws['B9'].v;
+        if(cell_productgroup !== "")
+        {
+          const buyercode = cell_productgroup.split("-");
+		  
+		  	if(buyercode.includes("-"))
+			{
+				if(buyercode[1].length > 5)
+				{
+					ws['B9'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B9', error:'Product Group code length must be 5 characters.'});
+				}
+			}
+			else
+			{
+				ws['B9'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+			}
+          
+        }
+        else
+        {
+          ws['B9'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B9', error:'Product Group Can not be in blank.'});
+        }
+
+        //Check Merchandiser
+        var cell_merchant = ws['B10'].v;
+        if(cell_merchant !== "")
+        {
+          const buyercode = cell_merchant.split("-");
+		  	if(buyercode.includes("-"))
+			{
+				if(buyercode[1].length > 10)
+				{
+					ws['B10'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B10', error:'Merchandiser code length must be 10 characters.'});
+				}
+			}
+			else
+			{
+				ws['B10'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+			}
+          
+        }
+        else
+        {
+          ws['B10'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B10', error:'Merchandiser Can not be in blank.'});
+        }
+
+        //Check Planner
+        var cell_planner = ws['B11'].v;
+        if(cell_planner !== "")
+        {
+          const buyercode = cell_planner.split("-");
+		  	if(buyercode.includes("-"))
+			{
+				if(buyercode[1].length > 10)
+				{
+					ws['B11'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B11', error:'Planner code length must be 10 characters.'});
+				}
+			}
+			else
+			{
+				ws['B11'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+			}
+          
+        }
+        else
+        {
+          ws['B11'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B11', error:'Planner Can not be in blank.'});
+        }
+
+        //Check Fabric Composition
+        var cell_fabriccomp = ws['B12'].v;
+        if(cell_fabriccomp !== "")
+        {
+          const buyercode = cell_fabriccomp.split("-");
+		  	if(buyercode.includes("-"))
+			{
+				if(buyercode[1].length > 10)
+				{
+					ws['B12'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B12', error:'Fabric Composition code length must be 10 characters.'});
+				}
+			}
+			else
+			{
+				ws['B12'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+			}
+          
+        }
+        else
+        {
+          ws['B12'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B12', error:'Fabric Composition Can not be in blank.'});
+        }
+
+        //Check Style Categorization
+        var cell_stylecat = ws['B13'].v;
+        if(cell_stylecat !== "")
+        {
+          	const buyercode = cell_stylecat.split("-");
+		  	if(buyercode.includes("-"))
+			{
+				if(buyercode[1].length !== 1)
+				{
+					ws['B13'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B13', error:'Style Categorization Letter length must be 1 character.'});
+				}
+				else
+				{
+					if(buyercode[1].match(/^[A-Z]*$/) === false)
+					{
+					ws['B13'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					//error_data.push({sheetname:sheetone_name, cellid:'B13', error:'Style Categorization Letter Need to change as Capital Letter.'});
+					}
+				}
+			}
+			else
+			{
+				ws['B13'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+			}
+          
+        }
+        else
+        {
+          ws['B13'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+          //error_data.push({sheetname:sheetone_name, cellid:'B13', error:'Style Categorization Can not be in blank.'});
+        }
+
 		XLSX.utils.book_append_sheet(wb, ws, 'CO LINE');// changed StNDdize CO to CO Line 
 
 		for (var i = 0; i < 14; i++) {

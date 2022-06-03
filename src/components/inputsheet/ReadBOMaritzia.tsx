@@ -169,18 +169,17 @@ function ReadBOM(props: any) {
 					); */
 
 					//Conversion of Yards to Meters
-					const skuUOM = row['SKUUOM *'].trim().substring(0, 3);
+					const skuUOM = row[' SKUUOM *'].trim().substring(0, 3);
+
 					if (skuUOM.toUpperCase() === 'YRD') {
-						newRow['Purchase UOM'] = 'MTR - Meters';
-						newRow['Conversion'] = (0.9144).toFixed(4);
-						newRow['Consumption'] = parseFloat(row['YY *']) * 0.9144;
-						newRow['Costing price'] = (
-							parseFloat(row['Costing price']) / 0.9144
-						).toFixed(4);
+						newRow[' Purchase UOM'] = 'MTR - Meters';
+						newRow[' Conversion'] = (0.9144).toFixed(4);
+						newRow[' Consumption'] = parseFloat(row[' YY *']) * 0.9144;
+						newRow[' Costing price'] = (parseFloat(row[' Costing price']) / 0.9144).toFixed(4);
 					}
 
 					//Duplicate costing price to purchase price column
-					newRow['Purchase price'] = newRow['Costing price'];
+					newRow[' Purchase price'] = newRow[' Costing price'];
 
 					return newRow;
 				});
