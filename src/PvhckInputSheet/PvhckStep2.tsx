@@ -576,7 +576,7 @@ const Step2Component = () => {
 
 	//When click download button Code execute from here
 	const onInputSheetDownload = async () => {
-
+		
 		if(selectedMerchandiser.length === 0)
 		{
 			alert('Please Select Merchandiser?');
@@ -701,8 +701,14 @@ const Step2Component = () => {
 		newStyleno += StyleNo;
 
 		newStyleno += (seasoncode + yearcode);
+
+		const NewSeason = selectedStyleData.season.toUpperCase() === 'FALL' ? 'FALL' :
+		selectedStyleData.season.toUpperCase() === 'HOLIDAY' ? 'HO' :
+		selectedStyleData.season.toUpperCase() === 'SUMMER' ? 'SU' :
+		selectedStyleData.season.toUpperCase() === 'WINTER' ? 'WIN' :
+		selectedStyleData.season.toUpperCase() === 'SPRING' ? 'SP' : '';
  
-		const season = selectedStyleData.season;
+		const season = NewSeason + pinkInputSheetContext.Selyear.toString().slice(-2) + " - " + selectedStyleData.season.toUpperCase() + " " + pinkInputSheetContext.Selyear.toString().slice(-2);
 
 		//const selectedBuyerDivisionName: string = buyerDevisionvalues[0].name;
 		
@@ -743,15 +749,15 @@ const Step2Component = () => {
 			const zft = '';
 
 			//Get delivery method based on Shipmode
-			const deliveryMethod = getDeliveryMethodPink(
-				line[ecvisionHeaderNames.SHIPMODE]
-			);
+			//const deliveryMethod = getDeliveryMethodPink(
+				//line[ecvisionHeaderNames.SHIPMODE]
+			//);
 
 			//Get FOB List based on styleid and bomid
-			const FOBList = await getFOB(
-				parseInt(pinkInputSheetContext.styleid),
-				parseInt(pinkInputSheetContext.bomid)
-			);
+			//const FOBList = await getFOB(
+				//parseInt(pinkInputSheetContext.styleid),
+				//parseInt(pinkInputSheetContext.bomid)
+			//);
 
 			//Get FOB based on Color (CO) from FOB List
 			//const FOB = FOBList.find(
@@ -778,25 +784,16 @@ const Step2Component = () => {
 				line.packmethod,
 				line.zoption,
 				line.TOTALQTY,
-				line.SIZE_1SZ,
 				line.SIZE_1X,
-				line.SIZE_1XL,
 				line.SIZE_2X,
-				line.SIZE_2XL,
 				line.SIZE_3X,
-				line.SIZE_3XL,
-				line.SIZE_4X,
-				line.SIZE_4XL,
-				line.SIZE_L,
-				line.SIZE_M,
-				line.SIZE_S,
-				line.SIZE_XL,
+				line.SIZE_XXS,
 				line.SIZE_XS,
-				line.SIZE_30,
-				line.SIZE_32,
-				line.SIZE_34,
-				line.SIZE_36,
-				line.SIZE_38,
+				line.SIZE_S,
+				line.SIZE_M,
+				line.SIZE_L,
+				line.SIZE_XL,
+				line.SIZE_2XL,
 				''//CO
 			];
 			template.push(rowToAdd);
@@ -1185,7 +1182,7 @@ const Step2Component = () => {
 		XLSX.utils.book_append_sheet(wb, ws3, 'Operations Track');// changed StNDdize Operations Track to Operations Track 
 		OpsTrackSheetFormat(ws3, opsToTrackData);
 
-		XLSX.writeFile(wb, StyleNo+ '_' +season + '_PVH Tommy Input Sheet.xlsx'); //PINk to VS Sleep
+		XLSX.writeFile(wb, newStyleno+ '_' +season + '_PVH Tommy Input Sheet.xlsx'); //PINk to VS Sleep
 
 	
 	};

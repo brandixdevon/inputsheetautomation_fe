@@ -665,15 +665,15 @@ const Step2Component = () => {
 			const zft = '';
 
 			//Get delivery method based on Shipmode
-			const deliveryMethod = getDeliveryMethodPink(
-				line[ecvisionHeaderNames.SHIPMODE]
-			);
+			//const deliveryMethod = getDeliveryMethodPink(
+				//line[ecvisionHeaderNames.SHIPMODE]
+			//);
 
 			//Get FOB List based on styleid and bomid
-			const FOBList = await getFOB(
-				parseInt(pinkInputSheetContext.styleid),
-				parseInt(pinkInputSheetContext.bomid)
-			);
+			//const FOBList = await getFOB(
+				//parseInt(pinkInputSheetContext.styleid),
+				//parseInt(pinkInputSheetContext.bomid)
+			//);
 
 			//Get FOB based on Color (CO) from FOB List
 			//const FOB = FOBList.find(

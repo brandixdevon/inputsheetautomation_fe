@@ -11,6 +11,7 @@ function Mainpage(props: any) {
 	const [BOM, setBOM] = useState([]);
 	const [colorData, setcolorData] = useState([]);
 	const [genericNo, setGenericNo] = useState('');
+	const [Selyear, setSelyear] = useState('');
 
 	const changeBOM = (BOM) => {
 		setBOM(BOM);
@@ -35,6 +36,9 @@ function Mainpage(props: any) {
 	};
 	const changeGenericNo = (genericNo) => {
 		setGenericNo(genericNo);
+	}; 
+	const changeSelyear = (Selyear) => {
+		setSelyear(Selyear);
 	};
 
 	return (
@@ -57,6 +61,8 @@ function Mainpage(props: any) {
 					changeBOMId,
 					genericNo,
 					changeGenericNo,
+					changeSelyear,
+					Selyear,
 				}}
 			>
 				<Row>

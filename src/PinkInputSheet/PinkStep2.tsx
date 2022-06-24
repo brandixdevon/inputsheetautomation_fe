@@ -356,7 +356,7 @@ const Step2Component = () => {
 				);
 
 
-				let tempXXS, tempXS, tempS, tempM, tempL, tempXL, tempXXL, tempXXXL, tempSMALL, tempMED, tempLARGE;
+				let tempXXS, tempXS, tempS, tempM, tempL, tempXL, tempXXL, tempXS_S, tempM_L, tempXL_XXL, tempXS_XXL_S, tempXS_XXL_R, tempXS_XXL_L, tempOS;
 				selectedColorLines.forEach((l) => {
 					const tempSize = l[ecvisionHeaderNames.MASTSIZEDESC]
 						.toUpperCase()
@@ -375,28 +375,37 @@ const Step2Component = () => {
 						tempXL = l[ecvisionHeaderNames.ORDERQTY];
 					} else if (tempSize.includes('XXL')) {
 						tempXXL = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.includes('XXXL')) {
-						tempXXXL = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.includes('SMALL')) {
-						tempSMALL = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.includes('MED')) {
-						tempMED = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.includes('LARGE')) {
-						tempLARGE = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.includes('XS/S')) {
+						tempXS_S = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.includes('M/L')) {
+						tempM_L = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.includes('XL/XXL')) {
+						tempXL_XXL = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.includes('XS-XXL.S')) {
+						tempXS_XXL_S = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.includes('XS-XXL.R')) {
+						tempXS_XXL_R = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.includes('XS-XXL.L')) {
+						tempXS_XXL_L = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.includes('OS')) {
+						tempOS = l[ecvisionHeaderNames.ORDERQTY];
 					}
 				});
 
-				const XXS = tempXXS > 0 ? tempXXS : 0;
-				const XS = tempXS > 0 ? tempXS : 0;
-				const S = tempS > 0 ? tempS : 0;
-				const M = tempM > 0 ? tempM : 0;
-				const L = tempL > 0 ? tempL : 0;
-				const XL = tempXL > 0 ? tempXL : 0;
-				const XXL = tempXXL > 0 ? tempXXL : 0;
-				const XXXL = tempXXXL > 0 ? tempXXXL : 0;
-				const SMALL = tempSMALL > 0 ? tempSMALL : 0;
-				const MED = tempMED > 0 ? tempMED : 0;
-				const LARGE = tempLARGE > 0 ? tempLARGE : 0;
+				const SETSIZE_XXS = tempXXS > 0 ? tempXXS : 0;
+				const SETSIZE_XS = tempXS > 0 ? tempXS : 0;
+				const SETSIZE_S = tempS > 0 ? tempS : 0;
+				const SETSIZE_M = tempM > 0 ? tempM : 0;
+				const SETSIZE_L = tempL > 0 ? tempL : 0;
+				const SETSIZE_XL = tempXL > 0 ? tempXL : 0;
+				const SETSIZE_XXL = tempXXL > 0 ? tempXXL : 0;
+				const SETSIZE_XS_S = tempXS_S > 0 ? tempXS_S : 0;
+				const SETSIZE_M_L = tempM_L > 0 ? tempM_L : 0;
+				const SETSIZE_XL_XXL = tempXL_XXL > 0 ? tempXL_XXL : 0;
+				const SETSIZE_XS_XXL_S = tempXS_XXL_S > 0 ? tempXS_XXL_S : 0;
+				const SETSIZE_XS_XXL_R = tempXS_XXL_R > 0 ? tempXS_XXL_R : 0;
+				const SETSIZE_XS_XXL_L = tempXS_XXL_L > 0 ? tempXS_XXL_L : 0;
+				const SETSIZE_OS = tempOS > 0 ? tempOS : 0;
 
 				const lineToBeCreated = {
 					masterColorKey: code,
@@ -406,26 +415,28 @@ const Step2Component = () => {
 					NDCDATE: selectedColorLines[0][ecvisionHeaderNames.NDCDATE],
 					VPONO: selectedColorLines[0][ecvisionHeaderNames.VPONO],
 					CPO: selectedColorLines[0][ecvisionHeaderNames.CPO],
-					MASTCOLORCODE:
-						selectedColorLines[0][ecvisionHeaderNames.MASTCOLORCODE],
-					MASTCOLORDESC:
-						selectedColorLines[0][ecvisionHeaderNames.MASTCOLORDESC],
-					CUSTCOLORCODE:
-						selectedColorLines[0][ecvisionHeaderNames.CUSTCOLORCODE],
+					MASTCOLORCODE: selectedColorLines[0][ecvisionHeaderNames.MASTCOLORCODE],
+					MASTCOLORDESC: selectedColorLines[0][ecvisionHeaderNames.MASTCOLORDESC],
+					CUSTCOLORCODE: selectedColorLines[0][ecvisionHeaderNames.CUSTCOLORCODE],
 					CUSTSTYLE: selectedColorLines[0].CUSTSTYLE,
 					CUSTSTYLEDESC: selectedColorLines[0].CUSTSTYLEDESC,
-					XXS,
-					XS,
-					S,
-					M,
-					L,
-					XL,
-					XXL,
-					XXXL,
-					SMALL,
-					MED,
-					LARGE,
-					TOTALQTY: parseInt(XXS) + parseInt(XS) + parseInt(S) + parseInt(M) + parseInt(L) + parseInt(XL) + parseInt(XXL) + parseInt(XXXL) + parseInt(SMALL) + parseInt(MED) + parseInt(LARGE),
+					SETSIZE_XXS,
+					SETSIZE_XS,
+					SETSIZE_S,
+					SETSIZE_M,
+					SETSIZE_L,
+					SETSIZE_XL,
+					SETSIZE_XXL,
+					SETSIZE_XS_S,
+					SETSIZE_M_L,
+					SETSIZE_XL_XXL,
+					SETSIZE_XS_XXL_S,
+					SETSIZE_XS_XXL_R,
+					SETSIZE_XS_XXL_L,
+					SETSIZE_OS,
+					TOTALQTY: parseInt(SETSIZE_XXS) + parseInt(SETSIZE_XS) + parseInt(SETSIZE_S) + 
+					parseInt(SETSIZE_M) + parseInt(SETSIZE_L) + parseInt(SETSIZE_XL) + parseInt(SETSIZE_XXL) + parseInt(SETSIZE_XS_S) + 
+					parseInt(SETSIZE_M_L) + parseInt(SETSIZE_XL_XXL) + parseInt(SETSIZE_XS_XXL_S) + parseInt(SETSIZE_XS_XXL_R) + parseInt(SETSIZE_XS_XXL_L) + parseInt(SETSIZE_XS_XXL_L) + parseInt(SETSIZE_OS),
 					DIVISIONCODE: selectedColorLines[0][ecvisionHeaderNames.DIVISIONCODE],
 					MASTSIZEDESC: selectedColorLines[0][ecvisionHeaderNames.MASTSIZEDESC],
 					FACTORYCOST: selectedColorLines[0][ecvisionHeaderNames.FACTORYCOST],
@@ -641,7 +652,11 @@ const Step2Component = () => {
 		
 		// HeaderSeason = (NewSeason);
 
-		const season = pinkInputSheetContext.season.toUpperCase()+new Date().getFullYear().toString().slice(-2);
+		const NewSeason = pinkInputSheetContext.season.toUpperCase() === 'FALL' ? 'FA' :
+		pinkInputSheetContext.season.toUpperCase() === 'SPRING' ? 'SP' :
+		pinkInputSheetContext.season.toUpperCase() === 'SUMMER' ? 'SU' : 'HO';
+
+		const season = pinkInputSheetContext.season.toUpperCase()+ " - " + NewSeason + pinkInputSheetContext.Selyear.toString().slice(-2);
 
 		//Devon Comment Below Line
 		//newStyleno += (season + selectedStyleData.itemGroup.slice(-1));
@@ -699,6 +714,8 @@ const Step2Component = () => {
 
 		);
 
+		selectedStyleData.newLines = selectedStyleData.newLines.sort( (vala, valb) => vala.MASTCOLORCODE.localeCompare(valb.MASTCOLORCODE) || vala.VPONO - valb.VPONO || vala.TOTALQTY - valb.TOTALQTY, );
+
 		//Loop through OLR lines
 		for (let i = 0; i < selectedStyleData.newLines.length; i++) {
 			const line = selectedStyleData.newLines[i];
@@ -723,10 +740,10 @@ const Step2Component = () => {
 			);
 
 			//Get FOB List based on styleid and bomid
-			const FOBList = await getFOB(
-				parseInt(pinkInputSheetContext.styleid),
-				parseInt(pinkInputSheetContext.bomid)
-			);
+			//const FOBList = await getFOB(
+				//parseInt(pinkInputSheetContext.styleid),
+				//parseInt(pinkInputSheetContext.bomid)
+			//);
 
 			//Get FOB based on Color (CO) from FOB List
 			//const FOB = FOBList.find(
@@ -754,17 +771,20 @@ const Step2Component = () => {
 				line.packMethod,
 				zft,
 				line[ecvisionHeaderNames.TOTALQTY],
-				line[ecvisionHeaderNames.XXS],
-				line[ecvisionHeaderNames.XS],
-				line[ecvisionHeaderNames.S],
-				line[ecvisionHeaderNames.M],
-				line[ecvisionHeaderNames.L],
-				line[ecvisionHeaderNames.XL],
-				line[ecvisionHeaderNames.XXL],
-				line[ecvisionHeaderNames.XXXL],
-				line[ecvisionHeaderNames.SMALL],
-				line[ecvisionHeaderNames.MED],
-				line[ecvisionHeaderNames.LARGE],
+				line["SETSIZE_XXS"],
+				line["SETSIZE_XS"],
+				line["SETSIZE_S"],
+				line["SETSIZE_M"],
+				line["SETSIZE_L"],
+				line["SETSIZE_XL"],
+				line["SETSIZE_XXL"],
+				line["SETSIZE_XS_S"],
+				line["SETSIZE_M_L"],
+				line["SETSIZE_XL_XXL"],
+				line["SETSIZE_XS_XXL_S"],
+				line["SETSIZE_XS_XXL_R"],
+				line["SETSIZE_XS_XXL_L"],
+				line["SETSIZE_OS"],
 				''//CO
 			];
 			template.push(rowToAdd);
@@ -783,38 +803,47 @@ const Step2Component = () => {
 			}
 		}
 
-		const xxsIndex = template[14].findIndex(i => i === 'XXS.');
+		const xxsIndex = template[14].findIndex(i => i === 'XXS');
 		if (xxsIndex > -1) template[14][xxsIndex] = 'XXS' + getinseamwithsize(selectedInseam);
 
-		const xsIndex = template[14].findIndex(i => i === 'XS.');
+		const xsIndex = template[14].findIndex(i => i === 'XS');
 		if (xsIndex > -1) template[14][xsIndex] = 'XS' + getinseamwithsize(selectedInseam);
 
-		const sIndex = template[14].findIndex(i => i === 'S.');
+		const sIndex = template[14].findIndex(i => i === 'S');
 		if (sIndex > -1) template[14][sIndex] = 'S' + getinseamwithsize(selectedInseam);
 
-		const mIndex = template[14].findIndex(i => i === 'M.');
+		const mIndex = template[14].findIndex(i => i === 'M');
 		if (mIndex > -1) template[14][mIndex] = 'M' + getinseamwithsize(selectedInseam);
 
-		const lIndex = template[14].findIndex(i => i === 'L.');
+		const lIndex = template[14].findIndex(i => i === 'L');
 		if (lIndex > -1) template[14][lIndex] = 'L' + getinseamwithsize(selectedInseam);
 
-		const xlIndex = template[14].findIndex(i => i === 'XL.');
+		const xlIndex = template[14].findIndex(i => i === 'XL');
 		if (xlIndex > -1) template[14][xlIndex] = 'XL' + getinseamwithsize(selectedInseam);
 
-		const xxlIndex = template[14].findIndex(i => i === 'XXL.');
+		const xxlIndex = template[14].findIndex(i => i === 'XXL');
 		if (xxlIndex > -1) template[14][xxlIndex] = 'XXL' + getinseamwithsize(selectedInseam);
 
-		const xxxlIndex = template[14].findIndex(i => i === 'XXXL.');
-		if (xxxlIndex > -1) template[14][xxxlIndex] = 'XXXL' + getinseamwithsize(selectedInseam);
+		const xs_s_Index = template[14].findIndex(i => i === 'XS/S');
+		if (xs_s_Index > -1) template[14][xs_s_Index] = 'XS/S' + getinseamwithsize(selectedInseam);
 
-		const smallIndex = template[14].findIndex(i => i === 'SMALL.');
-		if (smallIndex > -1) template[14][smallIndex] = 'SMALL' + getinseamwithsize(selectedInseam);
+		const m_l_Index = template[14].findIndex(i => i === 'M/L');
+		if (m_l_Index > -1) template[14][m_l_Index] = 'M/L' + getinseamwithsize(selectedInseam);
 
-		const medIndex = template[14].findIndex(i => i === 'MED.');
-		if (medIndex > -1) template[14][medIndex] = 'MED' + getinseamwithsize(selectedInseam);
+		const xl_xxl_Index = template[14].findIndex(i => i === 'XL/XXL');
+		if (xl_xxl_Index > -1) template[14][xl_xxl_Index] = 'XL/XXL' + getinseamwithsize(selectedInseam);
 
-		const longIndex = template[14].findIndex(i => i === 'LARGE.');
-		if (longIndex > -1) template[14][longIndex] = 'LARGE' + getinseamwithsize(selectedInseam);
+		const xs_xxl_s_Index = template[14].findIndex(i => i === 'XS-XXL.S');
+		if (xs_xxl_s_Index > -1) template[14][xs_xxl_s_Index] = 'XS-XXL.S' + getinseamwithsize(selectedInseam);
+
+		const xs_xxl_r_Index = template[14].findIndex(i => i === 'XS-XXL.R');
+		if (xs_xxl_r_Index > -1) template[14][xs_xxl_r_Index] = 'XS-XXL.R' + getinseamwithsize(selectedInseam);
+
+		const xs_xxl_l_Index = template[14].findIndex(i => i === 'XS-XXL.L');
+		if (xs_xxl_l_Index > -1) template[14][xs_xxl_l_Index] = 'XS-XXL.L' + getinseamwithsize(selectedInseam);
+
+		const os_Index = template[14].findIndex(i => i === 'OS');
+		if (os_Index > -1) template[14][os_Index] = 'OS' + getinseamwithsize(selectedInseam);
 
 		//BOM removing colors not in CO and Thread lines & Dummy in PLM
 		const filteredBOM: any[] = pinkInputSheetContext.BOM.filter((row: any) => {

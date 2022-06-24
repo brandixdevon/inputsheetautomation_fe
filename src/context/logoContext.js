@@ -9,6 +9,7 @@ export default React.createContext({
 	bomid: '',
 	season: '',
 	currentStep: 1,
+	Selyear: '',
 	changeBOM: (BOM) => {},
 	changeStyle: (Style) => {},
 	changeStyleId: (styleid) => {},
@@ -17,4 +18,6 @@ export default React.createContext({
 	changeSeason: (Season) => {},
 	changeGenericNo: (genericNo) => {},
 	changecolorData: (colorData) => {},
+	changeSelyear: (Selyear) => {},
+	//	NewSeason: '',
 });

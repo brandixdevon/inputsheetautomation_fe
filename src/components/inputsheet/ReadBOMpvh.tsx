@@ -42,7 +42,7 @@ function ReadBOM(props: any) {
 		changeSeason: (Season: any) => void;
 		changeGenericNo: (genericNo: any) => void;
 		changecolorData: (colorData: any) => void;
-		changeselyear: (selyear: any) => void;
+		changeSelyear: (selyear: any) => void;
 	} = useContext(SheetContext);
 
 	const [year, setYear] = useState(new Date().getFullYear());
@@ -190,7 +190,7 @@ function ReadBOM(props: any) {
 				inputSheetContext.changeBOM(result);
 				inputSheetContext.changecolorData(garmentcolors);
 				inputSheetContext.changeSeason(selectedSeason);
-				//inputSheetContext.changeselyear(year);
+				inputSheetContext.changeSelyear(year);
 				inputSheetContext.changeStyle(selectedStyle);
 				inputSheetContext.changecurrentStep(2);
 

@@ -18,6 +18,7 @@ var _default = _react["default"].createContext({
   bomid: '',
   season: '',
   currentStep: 1,
+  Selyear: '',
   changeBOM: function changeBOM(BOM) {},
   changeStyle: function changeStyle(Style) {},
   changeStyleId: function changeStyleId(styleid) {},
@@ -25,7 +26,8 @@ var _default = _react["default"].createContext({
   changecurrentStep: function changecurrentStep(currentStep) {},
   changeSeason: function changeSeason(Season) {},
   changeGenericNo: function changeGenericNo(genericNo) {},
-  changecolorData: function changecolorData(colorData) {} //	NewSeason: '',
+  changecolorData: function changecolorData(colorData) {}, //	NewSeason: '',
+  changeSelyear: function changeSelyear(Selyear) {},
 
 });
 

@@ -183,33 +183,35 @@ const Step2Component = () => {
 						obj[headerRow[i]] = line[i];
 					}
 
-					if (obj['**Global Style'].toString().includes(pinkInputSheetContext.style)) {
+
+					if (obj['Tech Pack Style'].toString().includes(pinkInputSheetContext.style)) {
 						
 						//Not usefull
-						if (!isNaN(obj['In DC Date']) && obj['In DC Date'] !== '') {
-							obj['In DC Date'] = convertExcelDateToJsLocaleDateString( obj['In DC Date']);
-						}
+						//if (!isNaN(obj['In DC Date']) && obj['In DC Date'] !== '') {
+							//obj['In DC Date'] = convertExcelDateToJsLocaleDateString( obj['In DC Date']);
+						//}
 
-						if (!isNaN(obj['Need By']) && obj['Need By'] !== '') {
-							obj['Need By'] = convertExcelDateToJsLocaleDateString(obj['Need By']);
+						if (!isNaN(obj['Req Sail By']) && obj['Req Sail By'] !== '') {
+							obj['Req Sail By'] = convertExcelDateToJsLocaleDateString(obj['Req Sail By']);
 						}
 
 						sheetStyles.push(obj);
 					}
 				});
 
+				
 
 				let sheetStyles_converted: any = [];
 
 		
-			const masterColorKeys = sheetStyles.filter((l) => l['**Color']).map(
-					(l) => l['**Color'] + l['Buy Plan'] + l['Size']
+			const masterColorKeys = sheetStyles.filter((l) => l['Style Color']).map(
+					(l) => l['Style Color'] + l['Buy Plan'] + l['Size']
 				);
 			const uniquemasterColorKeys = [...new Set([...masterColorKeys])];
 
 			uniquemasterColorKeys.forEach((code) => {
 				const selectedColorLines = sheetStyles.filter(
-					(l) => l['**Color'] + l['Buy Plan'] + l['Size'] == code
+					(l) => l['Style Color'] + l['Buy Plan'] + l['Size'] == code
 				);
  
 				let temp_size1,temp_size2,temp_size3,temp_size4,temp_size5,temp_size6,temp_size7,temp_size8,temp_size9,temp_size10;
@@ -221,25 +223,25 @@ const Step2Component = () => {
 						.trim();
 
 						if (tempSize.toUpperCase() === ('1X')) {
-							temp_size1 = l['Qty'];
+							temp_size1 = l['Size Qty'];
 						} else if (tempSize.toUpperCase() === ('2X')) {
-							temp_size2 = l['Qty'];
+							temp_size2 = l['Size Qty'];
 						} else if (tempSize.toUpperCase() === ('3X')) {
-							temp_size3 = l['Qty'];
+							temp_size3 = l['Size Qty'];
 						} else if (tempSize.toUpperCase() === ('XXS')) {
-							temp_size4 = l['Qty'];
+							temp_size4 = l['Size Qty'];
 						} else if (tempSize.toUpperCase() === ('XS')) {
-							temp_size5 = l['Qty'];
+							temp_size5 = l['Size Qty'];
 						} else if (tempSize.toUpperCase() === ('S')) {
-							temp_size6 = l['Qty'];
+							temp_size6 = l['Size Qty'];
 						} else if (tempSize.toUpperCase() === ('M')) {
-							temp_size7 = l['Qty'];
+							temp_size7 = l['Size Qty'];
 						} else if (tempSize.toUpperCase() === ('L')) {
-							temp_size8 = l['Qty'];
+							temp_size8 = l['Size Qty'];
 						} else if (tempSize.toUpperCase() === ('XL')) {
-							temp_size9 = l['Qty'];
+							temp_size9 = l['Size Qty'];
 						} else if (tempSize.toUpperCase() === ('2XL')) {
-							temp_size10 = l['Qty'];
+							temp_size10 = l['Size Qty'];
 						}
 	
 						const SIZE_1X = temp_size1 > 0 ? temp_size1 : 0;
@@ -254,29 +256,29 @@ const Step2Component = () => {
 						const SIZE_2XL = temp_size10 > 0 ? temp_size10 : 0;
 	
 					sheetStyles_converted.push({
-						id:l['**Color'] + l['Buy Plan'] + l['Size'],
+						id:l['Style Color'] + l['Buy Plan'] + l['Size'],
 						newline: 'False',
 						productionwarehouse: '',
-						destination: l['**Ship To'],
-						style:l['**Global Style'],
+						destination: l['Warehouse'],
+						style:l['Tech Pack Style'],
 						rddc:'',
 						rddp:'',
 						fobd:'',
-						ndcd:l['Need By'],
+						ndcd:l['Req Sail By'],
 						pcdd:'',
-						color:l['**Color Descr']+l['**Color']+l['**NRF'],
-						vpono:l['AA'],
+						color:l['Style Color Name']+l['Style Color Extension']+l['Style Color'],
+						vpono:l['AA#'],
 						cpono:'',
 						deliverymethod:'SEA',
 						salesprice:'',
 						deliveryterm:'Free on Board-FOB',
-						packmethod:l['**Color'],
+						packmethod:l['Style Color Extension']+l['Style Color'],
 						zoption:'',
 						article:'',
 						description:'',
 						warehouse:'',
 						countrydate:'',
-						shipto:l['**Ship To'],
+						shipto:l['Ship Via'],
 						modeoftransport:'',
 						SIZE_1X:SIZE_1X,
 						SIZE_2X:SIZE_2X,
@@ -330,7 +332,7 @@ const Step2Component = () => {
 						packMethod: '',
 						buyerDivision: '',
 						leadFactory: '',
-						MASTSTYLEDESC: sheetStyles[0]['**Style Descr']
+						MASTSTYLEDESC: sheetStyles[0]['Style Desc']
 					};
 
 					pinkInputSheetContext.changeGenericNo(''
@@ -654,36 +656,35 @@ const Step2Component = () => {
 		
 		newStyleno += 'C';
 
-		if(selectedInseam === "M")
+		if(selectedInseam === "G")
 		{
-			newStyleno += 'M';
+			newStyleno += 'G';
 		}
-		else if(selectedInseam === "O")
+		else if(selectedInseam === "E")
 		{
-			newStyleno += 'O';
+			newStyleno += 'E';
 		}
-		else if(selectedInseam === "B")
+		else if(selectedInseam === "D")
 		{
-			newStyleno += 'B';
+			newStyleno += 'D';
 		}
-		else if(selectedInseam === "R")
+		else if(selectedInseam === "K")
 		{
-			newStyleno += 'R';
-		}
-		else if(selectedInseam === "C")
-		{
-			newStyleno += 'C';
-		}
-		else
-		{
-			newStyleno += 'T';
+			newStyleno += 'K';
 		}
 
 		newStyleno += StyleNo;
 
 		newStyleno += (seasoncode + yearcode);
  
-		const season = selectedStyleData.season;
+		const NewSeason = selectedStyleData.season.toUpperCase() === 'FALL' ? 'FALL' :
+		selectedStyleData.season.toUpperCase() === 'HOLIDAY' ? 'HO' :
+		selectedStyleData.season.toUpperCase() === 'SUMMER' ? 'SU' :
+		selectedStyleData.season.toUpperCase() === 'WINTER' ? 'WIN' :
+		selectedStyleData.season.toUpperCase() === 'SPRING' ? 'SP' : '';
+ 
+		const season = NewSeason + pinkInputSheetContext.Selyear.toString().slice(-2) + " - " + selectedStyleData.season.toUpperCase() + " " + pinkInputSheetContext.Selyear.toString().slice(-2);
+
 
 		//const selectedBuyerDivisionName: string = buyerDevisionvalues[0].name;
 		
@@ -724,15 +725,15 @@ const Step2Component = () => {
 			const zft = '';
 
 			//Get delivery method based on Shipmode
-			const deliveryMethod = getDeliveryMethodPink(
-				line[ecvisionHeaderNames.SHIPMODE]
-			);
+			//const deliveryMethod = getDeliveryMethodPink(
+				//line[ecvisionHeaderNames.SHIPMODE]
+			//);
 
 			//Get FOB List based on styleid and bomid
-			const FOBList = await getFOB(
-				parseInt(pinkInputSheetContext.styleid),
-				parseInt(pinkInputSheetContext.bomid)
-			);
+			//const FOBList = await getFOB(
+				//parseInt(pinkInputSheetContext.styleid),
+				//parseInt(pinkInputSheetContext.bomid)
+			//);
 
 			//Get FOB based on Color (CO) from FOB List
 			//const FOB = FOBList.find(
@@ -759,25 +760,16 @@ const Step2Component = () => {
 				line.packmethod,
 				line.zoption,
 				line.TOTALQTY,
-				line.SIZE_1SZ,
 				line.SIZE_1X,
-				line.SIZE_1XL,
 				line.SIZE_2X,
-				line.SIZE_2XL,
 				line.SIZE_3X,
-				line.SIZE_3XL,
-				line.SIZE_4X,
-				line.SIZE_4XL,
-				line.SIZE_L,
-				line.SIZE_M,
-				line.SIZE_S,
-				line.SIZE_XL,
+				line.SIZE_XXS,
 				line.SIZE_XS,
-				line.SIZE_30,
-				line.SIZE_32,
-				line.SIZE_34,
-				line.SIZE_36,
-				line.SIZE_38,
+				line.SIZE_S,
+				line.SIZE_M,
+				line.SIZE_L,
+				line.SIZE_XL,
+				line.SIZE_2XL,
 				''//CO
 			];
 			template.push(rowToAdd);
@@ -1154,7 +1146,7 @@ const Step2Component = () => {
 		XLSX.utils.book_append_sheet(wb, ws3, 'Operations Track');// changed StNDdize Operations Track to Operations Track 
 		OpsTrackSheetFormat(ws3, opsToTrackData);
 
-		XLSX.writeFile(wb, StyleNo+ '_' +season + '_PVH Tommy Input Sheet.xlsx'); //PINk to VS Sleep
+		XLSX.writeFile(wb, newStyleno+ '_' +season + '_PVH CKNA Input Sheet.xlsx'); //PINk to VS Sleep
 
 	
 	};

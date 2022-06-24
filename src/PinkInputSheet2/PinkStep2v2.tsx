@@ -395,7 +395,7 @@ const Step2Componentv2 = () => {
 						code
 				);
 
-				let tempXS, tempXL, tempXXL, tempSMALL, tempMED, tempLARGE;
+				let tempXS, tempS, tempM, tempL, tempXL, temp2XL;
 				selectedColorLines.forEach((l) => {
 					const tempSize = l[ecvisionHeaderNames.MASTSIZEDESC]
 						.toUpperCase()
@@ -403,25 +403,25 @@ const Step2Componentv2 = () => {
 					
 					if (tempSize.toUpperCase() === 'XS') {
 						tempXS = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.toUpperCase() === 'SMALL') {
-						tempSMALL = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.toUpperCase() === 'MED') {
-						tempMED = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.toUpperCase() === 'LARGE') {
-						tempLARGE = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.toUpperCase() === 'S') {
+						tempS = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.toUpperCase() === 'M') {
+						tempM = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.toUpperCase() === 'L') {
+						tempL = l[ecvisionHeaderNames.ORDERQTY];
 					} else if (tempSize.toUpperCase() === 'XL') {
 						tempXL = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.toUpperCase() === 'XXL') {
-						tempXXL = l[ecvisionHeaderNames.ORDERQTY];
+					} else if (tempSize.toUpperCase() === '2XL') {
+						temp2XL = l[ecvisionHeaderNames.ORDERQTY];
 					}
 				});
 
-				const XS = tempXS > 0 ? tempXS : 0;
-				const SMALL = tempSMALL > 0 ? tempSMALL : 0;
-				const MED = tempMED > 0 ? tempMED : 0;
-				const LARGE = tempLARGE > 0 ? tempLARGE : 0;
-				const XL = tempXL > 0 ? tempXL : 0;
-				const XXL = tempXXL > 0 ? tempXXL : 0;
+				const SETSIZE_XS = tempXS > 0 ? tempXS : 0;
+				const SETSIZE_S = tempS > 0 ? tempS : 0;
+				const SETSIZE_M = tempM > 0 ? tempM : 0;
+				const SETSIZE_L = tempL > 0 ? tempL : 0;
+				const SETSIZE_XL = tempXL > 0 ? tempXL : 0;
+				const SETSIZE_2XL = temp2XL > 0 ? temp2XL : 0;
 
 				const lineToBeCreated = {
 					masterColorKey: code,
@@ -431,21 +431,18 @@ const Step2Componentv2 = () => {
 					NDCDATE: selectedColorLines[0][ecvisionHeaderNames.NDCDATE],
 					VPONO: selectedColorLines[0][ecvisionHeaderNames.VPONO],
 					CPO: selectedColorLines[0][ecvisionHeaderNames.CPO],
-					MASTCOLORCODE:
-						selectedColorLines[0][ecvisionHeaderNames.MASTCOLORCODE],
-					MASTCOLORDESC:
-						selectedColorLines[0][ecvisionHeaderNames.MASTCOLORDESC],
-					CUSTCOLORCODE:
-						selectedColorLines[0][ecvisionHeaderNames.CUSTCOLORCODE],
+					MASTCOLORCODE: selectedColorLines[0][ecvisionHeaderNames.MASTCOLORCODE],
+					MASTCOLORDESC: selectedColorLines[0][ecvisionHeaderNames.MASTCOLORDESC],
+					CUSTCOLORCODE: selectedColorLines[0][ecvisionHeaderNames.CUSTCOLORCODE],
 					CUSTSTYLE: selectedColorLines[0].CUSTSTYLE,
 					CUSTSTYLEDESC: selectedColorLines[0].CUSTSTYLEDESC,
-					XS,
-					SMALL,
-					MED,
-					LARGE,
-					XL,
-					XXL,
-					TOTALQTY: parseInt(XS) + parseInt(SMALL) + parseInt(MED) + parseInt(LARGE)+ parseInt(XL) + parseInt(XXL),
+					SETSIZE_XS,
+					SETSIZE_S,
+					SETSIZE_M,
+					SETSIZE_L,
+					SETSIZE_XL,
+					SETSIZE_2XL,
+					TOTALQTY: parseInt(SETSIZE_XS) + parseInt(SETSIZE_S) + parseInt(SETSIZE_M) + parseInt(SETSIZE_L)+ parseInt(SETSIZE_XL) + parseInt(SETSIZE_2XL),
 					DIVISIONCODE: selectedColorLines[0][ecvisionHeaderNames.DIVISIONCODE],
 					MASTSIZEDESC: selectedColorLines[0][ecvisionHeaderNames.MASTSIZEDESC],
 					FACTORYCOST: selectedColorLines[0][ecvisionHeaderNames.FACTORYCOST],
@@ -574,7 +571,7 @@ const Step2Componentv2 = () => {
 
 
 	const onInputSheetDownload = async () => {
-		
+
 		selectedStyleData.newLines = upOLRDATASET.newLines;
 		
 		/* Devon Comment This
@@ -668,7 +665,7 @@ const Step2Componentv2 = () => {
 		pinkInputSheetContext.season.toUpperCase() === 'SPRING' ? 'SP' :
 		pinkInputSheetContext.season.toUpperCase() === 'SUMMER' ? 'SU' : 'HO';
 
-		const season = pinkInputSheetContext.season.toUpperCase()+ " - " +NewSeason+new Date().getFullYear().toString().slice(-2);
+		const season = pinkInputSheetContext.season.toUpperCase()+ " - " + NewSeason + pinkInputSheetContext.Selyear.toString().slice(-2);
 
 		//Devon Comment Below Line
 		//newStyleno += (season + selectedStyleData.itemGroup.slice(-1));
@@ -729,6 +726,8 @@ const Step2Componentv2 = () => {
 
 		);
 
+		selectedStyleData.newLines = selectedStyleData.newLines.sort( (vala, valb) => vala.MASTCOLORCODE.localeCompare(valb.MASTCOLORCODE) || vala.VPONO - valb.VPONO || vala.TOTALQTY - valb.TOTALQTY, );
+
 		//Loop through OLR lines
 		for (let i = 0; i < selectedStyleData.newLines.length; i++) {
 			const line = selectedStyleData.newLines[i];
@@ -754,10 +753,10 @@ const Step2Componentv2 = () => {
 			);
 
 			//Get FOB List based on styleid and bomid
-			const FOBList = await getFOB(
-				parseInt(pinkInputSheetContext.styleid),
-				parseInt(pinkInputSheetContext.bomid)
-			);
+			//const FOBList = await getFOB(
+				//parseInt(pinkInputSheetContext.styleid),
+				//parseInt(pinkInputSheetContext.bomid)
+			//);
 
 			//Get FOB based on Color (CO) from FOB List
 			/*const FOB = FOBList.find(
@@ -786,12 +785,12 @@ const Step2Componentv2 = () => {
 				line.packMethod,
 				zft,
 				line[ecvisionHeaderNames.TOTALQTY],
-				line["XS"],
-				line["SMALL"],
-				line["MED"],
-				line["LARGE"],
-				line["XL"],
-				line["XXL"],
+				line["SETSIZE_XS"],
+				line["SETSIZE_S"],
+				line["SETSIZE_M"],
+				line["SETSIZE_L"],
+				line["SETSIZE_XL"],
+				line["SETSIZE_2XL"],
 				''//CO
 			];
 			template.push(rowToAdd);
@@ -811,23 +810,23 @@ const Step2Componentv2 = () => {
 			}
 		}
 		
-		const xsIndex = template[14].findIndex(i => i === 'XS.');
+		const xsIndex = template[14].findIndex(i => i === 'XS');
 		if (xsIndex > -1) template[14][xsIndex] = 'XS' + getinseamwithsize(selectedInseam);
 
-		const smallIndex = template[14].findIndex(i => i === 'SMALL.');
-		if (smallIndex > -1) template[14][smallIndex] = 'SMALL' + getinseamwithsize(selectedInseam);
+		const smallIndex = template[14].findIndex(i => i === 'S');
+		if (smallIndex > -1) template[14][smallIndex] = 'S' + getinseamwithsize(selectedInseam);
 
-		const medIndex = template[14].findIndex(i => i === 'MED.');
-		if (medIndex > -1) template[14][medIndex] = 'MED' + getinseamwithsize(selectedInseam);
+		const medIndex = template[14].findIndex(i => i === 'M');
+		if (medIndex > -1) template[14][medIndex] = 'M' + getinseamwithsize(selectedInseam);
 
-		const longIndex = template[14].findIndex(i => i === 'LARGE.');
-		if (longIndex > -1) template[14][longIndex] = 'LARGE' + getinseamwithsize(selectedInseam);
+		const longIndex = template[14].findIndex(i => i === 'L');
+		if (longIndex > -1) template[14][longIndex] = 'L' + getinseamwithsize(selectedInseam);
 
-		const xlIndex = template[14].findIndex(i => i === 'XL.');
+		const xlIndex = template[14].findIndex(i => i === 'XL');
 		if (xlIndex > -1) template[14][xlIndex] = 'XL' + getinseamwithsize(selectedInseam);
 
-		const xxlIndex = template[14].findIndex(i => i === 'XXL.');
-		if (xxlIndex > -1) template[14][xxlIndex] = 'XXL' + getinseamwithsize(selectedInseam);
+		const xxlIndex = template[14].findIndex(i => i === '2XL');
+		if (xxlIndex > -1) template[14][xxlIndex] = '2XL' + getinseamwithsize(selectedInseam);
 
 		
 
