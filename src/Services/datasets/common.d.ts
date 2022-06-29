@@ -1,6 +1,31 @@
 export const years = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
 
 export const BOMData = (line) => {
+
+function GMTcolor(value)
+{
+	if(value === "Colors-All")
+	{
+		return value;
+	}
+	else if(value.includes("-Unavailable in M3") === true)
+	{
+		return value.replace('-Unavailable in M3','');
+	}
+	else if(value.includes("-") === true)
+	{
+		var arr = value.split("-");      // Split the string using dot as separator
+		var lastVal = arr.pop();
+		var newval =  value.replace('-'+lastVal,'');
+
+		return newval;
+	}
+	else
+	{
+		return value;
+	}
+}
+
 	return {
 		' NewLine':line['NewLine'],
 		' BOMCategory *': line['BOMCategory'],//changed from Main category
@@ -17,11 +42,11 @@ export const BOMData = (line) => {
 		' ItemName *': line['ItemName'],
 		' ItemDescription *': line['ItemDescription'],
 		' BrandCategory *': line['Brand Category'],
-		' GMTColor': line['GMTColor'],
+		' GMTColor': GMTcolor(line['GMTColor']),
 		' GMTZOption': line['GMTZOption'],
 		' GMTSize': line['GMTSize'],
 		' RMZOption': line['RMZOption'],
-		' RMColor': line['RMColor'],
+		' RMColor': GMTcolor(line['RMColor']),
 		' RMSize': line['RMSize'],
 		' YY *': line['YY'],
 		' Wastage %*': line['Wastage %'],
@@ -169,7 +194,7 @@ export const COTblDataPink = (
 			' M',
 			' L',
 			' XL',
-			' 2XL',
+			' XXL',
 			' CO Number',
 		],
 	];

@@ -403,15 +403,15 @@ const Step2Componentv2 = () => {
 					
 					if (tempSize.toUpperCase() === 'XS') {
 						tempXS = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.toUpperCase() === 'S') {
+					} else if (tempSize.toUpperCase() === 'SMALL') {
 						tempS = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.toUpperCase() === 'M') {
+					} else if (tempSize.toUpperCase() === 'MED') {
 						tempM = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.toUpperCase() === 'L') {
+					} else if (tempSize.toUpperCase() === 'LARGE') {
 						tempL = l[ecvisionHeaderNames.ORDERQTY];
 					} else if (tempSize.toUpperCase() === 'XL') {
 						tempXL = l[ecvisionHeaderNames.ORDERQTY];
-					} else if (tempSize.toUpperCase() === '2XL') {
+					} else if (tempSize.toUpperCase() === 'XXL') {
 						temp2XL = l[ecvisionHeaderNames.ORDERQTY];
 					}
 				});
