@@ -9,6 +9,7 @@ import {
 	Select,
 	Button,
 } from '@material-ui/core';
+import { toast } from 'react-toastify';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
 import {
@@ -128,10 +129,12 @@ function ReadBOM(props: any) {
 				setLoadingBomVersion(true);
 			} else {
 				alert('No BOMs in Epixo.');
+				//toast.error('No BOMs in Epixo.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 				setLoadingBomVersion(null);
 			}
 		} else {
 			alert('Failed to get BOM Versions from Epixo.');
+			//toast.error('Failed to get BOM Versions from Epixo.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			setLoadingBomVersion(null);
 		}
 		setgettingData(false);
@@ -157,16 +160,6 @@ function ReadBOM(props: any) {
 				
 				const fullBOM = newBOM.map((row) => {
 					const newRow = JSON.parse(JSON.stringify(row));
-
-					//Add Sourcing Merch details to the BOM
-					/* Deveon Comment
-					newRow['Sourcing Merchant'] = getSourcingMerchLogo(
-						row['RM Product Group']
-					); 
-
-					newRow['SourcingMerchant *'] = getSourcingMerchLogo(
-						row['RMProcurementGroup']
-					); */
 
 					//Conversion of Yards to Meters
 					const skuUOM = row[' SKUUOM *'].trim().substring(0, 3);
@@ -198,12 +191,14 @@ function ReadBOM(props: any) {
 				setLoadingBom(true);
 			} else {
 				alert('No Data in BOM');
+				//toast.error('No Data in BOM', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 				setgettingData(false);
 				setGetBomBtn(false);
 				setLoadingBom(false);
 			}
 		} else {
 			alert('Failed to get BOM from Epixo.');
+			//toast.error('Failed to get BOM from Epixo.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			setgettingData(false);
 			setGetBomBtn(false);
 			setLoadingBom(false);

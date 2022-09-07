@@ -59,20 +59,18 @@ export const getSeasonPink = (seasonCode: string) => {
 };
 
 export const getSeasonAritzia = (seasonCode: string) => {
-	if (seasonCode) {
-		const code = seasonCode.substr(seasonCode.length - 5);;
-		const year = seasonCode.substr(seasonCode.length - 2);
-
+	const code = seasonCode.substr(seasonCode.length - 5);;
+		const year = seasonCode.substr(seasonCode.length - 2); 
+		
 		return code.includes('SU') === true
 			? `SUMMER ${year}-SU${year}`
 			: code.includes('SP') === true
 			? `SPRING ${year}-SP${year}`
 			: code.includes('FA') === true
 			? `FALL ${year}-FA${year}`
-			: code.includes('WIN') === true
-			? `WINTER ${year}-WIN${year}`
+			: code.includes('WI') === true
+			? `WINTER ${year}-WI${year}`
 			: '';
-	}
 };
 
 export const getFOB = async (styleid: number, bomid: number) => {

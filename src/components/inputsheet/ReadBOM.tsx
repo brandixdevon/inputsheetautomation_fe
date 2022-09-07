@@ -158,16 +158,6 @@ function ReadBOM(props: any) {
 				const fullBOM = newBOM.map((row) => {
 					const newRow = JSON.parse(JSON.stringify(row));
 
-					//Add Sourcing Merch details to the BOM
-					/* Deveon Comment
-					newRow['Sourcing Merchant'] = getSourcingMerchLogo(
-						row['RM Product Group']
-					); 
-
-					newRow['SourcingMerchant *'] = getSourcingMerchLogo(
-						row['RMProcurementGroup']
-					); */
-
 					//Conversion of Yards to Meters
 					const skuUOM = row[' SKUUOM *'].trim().substring(0, 3);
 

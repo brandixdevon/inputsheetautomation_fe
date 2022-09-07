@@ -9,6 +9,8 @@ import {
 	Select,
 	Button,
 } from '@material-ui/core';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
 import {
@@ -16,10 +18,11 @@ import {
 	getBOMVersions,
 	getBOMandColorData,
 } from '../../Services/data';
-import { BOMData, years } from '../../Services/datasets/common.d';
+import { BOMDataforPVH as BOMData, years } from '../../Services/datasets/common.d';
 import { AutoComplete } from 'antd';
 import { getSourcingMerchLogo } from '../../Services/logo';
 const { Option } = AutoComplete;
+
 
 function ReadBOM(props: any) {
 	const { SheetContext, name } = props;
@@ -87,7 +90,8 @@ function ReadBOM(props: any) {
 				setstylesData(styledata);
 				setstylelist(uniqueStyles);
 			} else {
-				console.log('Failed to get data from Epixo.');
+				alert('Failed to get data from Epixo.');
+				//toast.error('Failed to get data from Epixo.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			}
 		}
 		fetchData();
@@ -128,10 +132,12 @@ function ReadBOM(props: any) {
 				setLoadingBomVersion(true);
 			} else {
 				alert('No BOMs in Epixo.');
+				//toast.error('No BOMs in Epixo.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 				setLoadingBomVersion(null);
 			}
 		} else {
 			alert('Failed to get BOM Versions from Epixo.');
+			//toast.error('Failed to get BOM Versions from Epixo.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			setLoadingBomVersion(null);
 		}
 		setgettingData(false);
@@ -154,10 +160,13 @@ function ReadBOM(props: any) {
 				const headers = Object.keys(newBOM[0]).filter(
 					(key) => !['raw', 'updated_at'].includes(key)
 				);
+
+				var i_inc = 0;
 				
 				const fullBOM = newBOM.map((row) => {
 					const newRow = JSON.parse(JSON.stringify(row));
 
+					i_inc = i_inc + 1;
 					//Add Sourcing Merch details to the BOM
 					/* Deveon Comment
 					newRow['Sourcing Merchant'] = getSourcingMerchLogo(
@@ -177,7 +186,7 @@ function ReadBOM(props: any) {
 						newRow[' Consumption'] = parseFloat(row[' YY *']) * 0.9144;
 						newRow[' Costing price'] = (parseFloat(row[' Costing price']) / 0.9144).toFixed(4);
 					}
-
+					//newRow['IDSeq'] = i_inc;
 					//Duplicate costing price to purchase price column
 					newRow[' Purchase price'] = newRow[' Costing price'];
 
@@ -185,7 +194,8 @@ function ReadBOM(props: any) {
 				});
 
 				const d = fullBOM.map((obj: any) => headers.map((key) => obj[key]));
-				const garmentcolors = fullBOM.map((line: any) => line['GMTColor']);
+				const garmentcolors = fullBOM.map((line: any) => line[' GMTColor']);
+				
 				const result = [headers, ...d];
 				inputSheetContext.changeBOM(result);
 				inputSheetContext.changecolorData(garmentcolors);
@@ -196,14 +206,19 @@ function ReadBOM(props: any) {
 
 				setgettingData(false);
 				setLoadingBom(true);
+				alert('Epixo BOM Lines Successfully Loaded!');
+				//toast.success('Epixo BOM Lines Successfully Loaded!', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+
 			} else {
 				alert('No Data in BOM');
+				//toast.error('No Data in BOM', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 				setgettingData(false);
 				setGetBomBtn(false);
 				setLoadingBom(false);
 			}
 		} else {
 			alert('Failed to get BOM from Epixo.');
+			//toast.error('Failed to get BOM from Epixo.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			setgettingData(false);
 			setGetBomBtn(false);
 			setLoadingBom(false);

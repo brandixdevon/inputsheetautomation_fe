@@ -58,9 +58,9 @@ export const yearCodes = [
 ];
 // Inseam selection Para passing
 export const inseams = [
+	{ id: 'R', name: 'REG' },
 	{ id: 'L', name: 'LONG' },
 	{ id: 'S', name: 'SHORT' },
-	{ id: 'R', name: 'REG' },
 ];
 
 export const packingTypes = [

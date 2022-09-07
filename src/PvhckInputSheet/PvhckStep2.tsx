@@ -11,6 +11,8 @@ import {
 } from '@material-ui/core';
 import DropDownComponent from '../components/layout/dropdownComponent';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 //import XLSX from 'xlsx';
 import XLSX from 'xlsx-js-style';
 import {
@@ -51,6 +53,7 @@ import {
 import { convertExcelDateToJsLocaleDateString } from '../utils/conversions';
 import { getBOMThreadLinesLogo, getThreadLines } from '../Services/threadsheet';
 import { OpsTrackSheetFormat } from '../Services/formatExcel';
+import {Tabs, Tab} from 'react-bootstrap-tabs';
 
 const Step2Component = () => {
 
@@ -61,8 +64,12 @@ const Step2Component = () => {
 	const [garmentCompositions, setgarmentCompositions] = useState([]);
 	const [warehouses, setwarehouses] = useState([]);
 	const [m3buyerDivisions, setm3buyerDivisions] = useState([]);
+
+	const [BomDownloadEnable, setBomDownloadEnable] = useState(false);
+	
 	
 	const pinkInputSheetContext = useContext(PinkInputSheetContext);
+	const [NEWBOMLINES, setNEWBOMLINES] = useState<any>(pinkInputSheetContext.BOM);
 	const vsInputSheetContext = useContext(VsInputSheetContext);
 	const [filename, setFileName] = useState('Select AA Sheet File');
 	const [selectedWareHouse, setSelectedWarehouse] = useState<any>('');
@@ -150,6 +157,7 @@ const Step2Component = () => {
 		if(pinkInputSheetContext.style.length < 1)
 		{
 			alert('Please Select/Sync Style and BOM.');
+			//toast.error('Please Select/Sync Style and BOM.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});	
 			return;
 		}
 
@@ -345,12 +353,17 @@ const Step2Component = () => {
 					setSelectedStyleData(uniqueStylesWithData);
 
 					alert(sheetStyles.length.toString()+' No of Related Rows Found in AA Sheet.');
+					//toast.info(sheetStyles.length.toString()+' No of Related Rows Found in AA Sheet.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 					
 				} else {
 					alert('No Style ' + pinkInputSheetContext.style);
+					//toast.error('No Style ' + pinkInputSheetContext.style, { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+					
 				}
 			} else {
 				alert('No sheet named AA');
+				//toast.error('No sheet named AA', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+				
 			}
 		};
 
@@ -386,12 +399,16 @@ const Step2Component = () => {
 			else
 			{
 				alert('Please Select Warehouse?');
+				//toast.error('Please Select Warehouse?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+			
 			}
 			
 		}
 		else
 		{
 			alert('Row line Can not identify.');
+			//toast.error('Row line Can not identify.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+		
 		}
 
 	};
@@ -418,12 +435,14 @@ const Step2Component = () => {
 			else
 			{
 				alert('Please Select Packing Method?');
+				//toast.error('Please Select Packing Method?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			}
 
 		}
 		else
 		{
 			alert('Please Select Pack Method and data.');
+			//toast.error('Please Select Pack Method and data.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 		}
 
 	};
@@ -448,12 +467,16 @@ const Step2Component = () => {
 			else
 			{
 				alert('Please Select Date?');
+				//toast.error('Please Select Date?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+				
 			}
 
 		}
 		else
 		{
 			alert('Please Select Pack Method and data.');
+			//toast.error('Please Select Pack Method and data.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+			
 		}
 
 	};
@@ -476,12 +499,16 @@ const Step2Component = () => {
 			else
 			{
 				alert('Please Select Date?');
+				//toast.error('Please Select Date?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+				
 			}
 
 		}
 		else
 		{
 			alert('Please Select Pack Method and data.');
+			//toast.error('Please Select Pack Method and data.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+			
 		}
 
 	};
@@ -506,6 +533,7 @@ const Step2Component = () => {
 		if(selectedWareHouse.length === 0)
 		{
 			alert('Please Select Warehouse?');
+			//toast.error('Please Select Warehouse?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
@@ -519,7 +547,9 @@ const Step2Component = () => {
 			});
 			setSelectedStyleData(cselectedStyleData);
  
-			alert('All Rows updated.');
+			alert('All Rows updated by Warehouse.');
+			//toast.success('All Rows updated by Warehouse.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+			
 
 	};
  
@@ -527,6 +557,7 @@ const Step2Component = () => {
 		if(requestDelDate.length === 0)
 		{
 			alert('Please Select Date?');
+			//toast.error('Please Select Date?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
@@ -551,14 +582,16 @@ const Step2Component = () => {
 		});
 		setSelectedStyleData(cselectedStyleData);
 		
-
-			alert('All Rows updated.');
+		alert('All Rows updated.');
+		//toast.success('All Rows updated.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+		
 	};
 
 	const onAddDelDatePlannerClicked = async () => {
 		if(requestDelDate.length === 0)
 		{
 			alert('Please Select Date?');
+			//toast.error('Please Select Date?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
@@ -570,8 +603,8 @@ const Step2Component = () => {
 		});
 		setSelectedStyleData(cselectedStyleData);
 		
-
-			alert('All Rows updated.');
+		alert('All Rows updated.');
+		//toast.success('All Rows updated.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 	};
 
 	//When click download button Code execute from here
@@ -580,48 +613,56 @@ const Step2Component = () => {
 		if(selectedMerchandiser.length === 0)
 		{
 			alert('Please Select Merchandiser?');
+			//toast.error('Please Select Merchandiser?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 		
 		if(selectedPlanner.length === 0)
 		{
 			alert('Please Select Planner?');
+			//toast.error('Please Select Planner?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
 		if(selectedLeadFactories.length === 0)
 		{
 			alert('Please Select Lead factory?');
+			//toast.error('Please Select Lead factory?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
 		if(selectedGarmentCompositions.length === 0)
 		{
 			alert('Please Select Garment Composition?');
+			//toast.error('Please Select Garment Composition?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
 		if(selectedBuyerDivisions.length === 0)
 		{
 			alert('Please Select Buyer Division?');
+			//toast.error('Please Select Buyer Division?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
 		if(selectedM3BuyerDivision.length === 0)
 		{
 			alert('Please Select M3 Buyer Division?');
+			//toast.error('Please Select M3 Buyer Division?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
 		if(selectedInseam.length === 0)
 		{
 			alert('Please Select Order Type?');
+			//toast.error('Please Select Order Type?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
-		if(selectedStyleData.styleNo.length === 0)
+		if(selectedStyleData.styleNo === "" || selectedStyleData.styleNo === undefined)
 		{
-			alert('Please Select BOM.');
+			alert('Please Upload AA Sheet.');
+			//toast.error('Please Upload AA Sheet.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
@@ -893,280 +934,6 @@ const Step2Component = () => {
 		const ws = XLSX.utils.aoa_to_sheet(template);
 		ws['!cols'] = wscols;
 
-		//==== Input Sheet Validation ====//
-		//Check Style No Format
-        var cell_styleno = ws['B1'].v;
-        if(cell_styleno !== "")
-        {
-          if(cell_styleno.length !== 8)
-          {
-            ws['B1'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-            //error_data.push({sheetname:sheetone_name, cellid:'B1', error:'Style No Length not equal to 8 characters.'});
-          }
-        }
-        else
-        {
-          ws['B1'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B1', error:'Style No Can not be in blank.'});
-        }
-
-        //Check Version ID
-        var cell_versionid = ws['B2'].v;
-        if(RegExp('^[0-9]*$').test(cell_versionid) === false)
-        {
-          ws['B2'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B2', error:'Only Numeric Version ID is allowed.'});
-        }
-
-        //Check Garment Item Desc
-        var cell_itemdesc = ws['B3'].v;
-        if(cell_itemdesc !== "")
-        {
-          if(cell_itemdesc.length > 60)
-          {
-            ws['B3'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-            //error_data.push({sheetname:sheetone_name, cellid:'B3', error:'Garment Item Description Can not be greater than 8 characters.'});
-          }
-        }
-        else
-        {
-          ws['B3'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B3', error:'Garment Item Description Can not be in blank.'});
-        }
-
-        //Check Lead Factory
-        var cell_leadfactory = ws['B4'].v;
-        if(cell_leadfactory !== "")
-        {
-          const buyercode = cell_leadfactory.split("-");
-		  	if(buyercode.includes("-"))
-			{
-				if(buyercode[1].length !== 3)
-				{
-					ws['B4'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B4', error:'Lead Factory Code length must be 3 characters.'});
-				}
-			}
-			else
-			{
-				ws['B4'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-			}
-          
-        }
-        else
-        {
-          ws['B4'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B4', error:'Lead Factory Can not be in blank.'});
-        }
-
-        //Check Buyer
-        var cell_buyer = ws['B5'].v;
-        if(cell_buyer !== "")
-        {
-          const buyercode = cell_buyer.split("-");
-		  	if(buyercode.includes("-"))
-		  	{
-				if(buyercode[1].length !== 10)
-				{
-					ws['B5'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B5', error:'Buyer code length must be 8 characters.'});
-				}
-			}
-			else
-			{
-				ws['B5'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-			}
-        }
-        else
-        {
-          ws['B5'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B5', error:'Buyer Can not be in blank.'});
-        }
-
-        //Check Buyer Division
-        var cell_buyerdiv = ws['B6'].v;
-        if(cell_buyerdiv !== "")
-        {
-          const buyercode = cell_buyerdiv.split("-");
-		  	if(buyercode.includes("-"))
-			{
-				if(buyercode[1].length > 3)
-				{
-					ws['B6'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B6', error:'Buyer Division code length must be 3 characters.'});
-				}
-			}
-			else
-			{
-				ws['B6'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-			}
-          
-        }
-        else
-        {
-          ws['B6'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B6', error:'Buyer Division Can not be in blank.'});
-        }
-
-        //Check Season
-        var cell_season = ws['B8'].v;
-        if(cell_season !== "")
-        {
-          const buyercode = cell_season.split("-");
-		  	if(buyercode.includes("-"))
-			{
-				if(buyercode[1].length > 7)
-				{
-					ws['B8'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B8', error:'Season code length must be 7 characters.'});
-				}
-			}
-			else
-			{
-				ws['B8'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-			}
-          
-        }
-        else
-        {
-          ws['B8'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B8', error:'Season Can not be in blank.'});
-        }
-
-        //Check Product Group
-        var cell_productgroup = ws['B9'].v;
-        if(cell_productgroup !== "")
-        {
-          const buyercode = cell_productgroup.split("-");
-		  
-		  	if(buyercode.includes("-"))
-			{
-				if(buyercode[1].length > 5)
-				{
-					ws['B9'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B9', error:'Product Group code length must be 5 characters.'});
-				}
-			}
-			else
-			{
-				ws['B9'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-			}
-          
-        }
-        else
-        {
-          ws['B9'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B9', error:'Product Group Can not be in blank.'});
-        }
-
-        //Check Merchandiser
-        var cell_merchant = ws['B10'].v;
-        if(cell_merchant !== "")
-        {
-          const buyercode = cell_merchant.split("-");
-		  	if(buyercode.includes("-"))
-			{
-				if(buyercode[1].length > 10)
-				{
-					ws['B10'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B10', error:'Merchandiser code length must be 10 characters.'});
-				}
-			}
-			else
-			{
-				ws['B10'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-			}
-          
-        }
-        else
-        {
-          ws['B10'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B10', error:'Merchandiser Can not be in blank.'});
-        }
-
-        //Check Planner
-        var cell_planner = ws['B11'].v;
-        if(cell_planner !== "")
-        {
-          const buyercode = cell_planner.split("-");
-		  	if(buyercode.includes("-"))
-			{
-				if(buyercode[1].length > 10)
-				{
-					ws['B11'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B11', error:'Planner code length must be 10 characters.'});
-				}
-			}
-			else
-			{
-				ws['B11'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-			}
-          
-        }
-        else
-        {
-          ws['B11'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B11', error:'Planner Can not be in blank.'});
-        }
-
-        //Check Fabric Composition
-        var cell_fabriccomp = ws['B12'].v;
-        if(cell_fabriccomp !== "")
-        {
-          const buyercode = cell_fabriccomp.split("-");
-		  	if(buyercode.includes("-"))
-			{
-				if(buyercode[1].length > 10)
-				{
-					ws['B12'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B12', error:'Fabric Composition code length must be 10 characters.'});
-				}
-			}
-			else
-			{
-				ws['B12'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-			}
-          
-        }
-        else
-        {
-          ws['B12'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B12', error:'Fabric Composition Can not be in blank.'});
-        }
-
-        //Check Style Categorization
-        var cell_stylecat = ws['B13'].v;
-        if(cell_stylecat !== "")
-        {
-          	const buyercode = cell_stylecat.split("-");
-		  	if(buyercode.includes("-"))
-			{
-				if(buyercode[1].length !== 1)
-				{
-					ws['B13'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B13', error:'Style Categorization Letter length must be 1 character.'});
-				}
-				else
-				{
-					if(buyercode[1].match(/^[A-Z]*$/) === false)
-					{
-					ws['B13'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B13', error:'Style Categorization Letter Need to change as Capital Letter.'});
-					}
-				}
-			}
-			else
-			{
-				ws['B13'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-			}
-          
-        }
-        else
-        {
-          ws['B13'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B13', error:'Style Categorization Can not be in blank.'});
-        }
-
 		XLSX.utils.book_append_sheet(wb, ws, 'CO LINE');// changed StNDdize CO to CO Line 
 
 		for (var i = 0; i < 14; i++) {
@@ -1184,6 +951,8 @@ const Step2Component = () => {
 
 		XLSX.writeFile(wb, newStyleno+ '_' +season + '_PVH Tommy Input Sheet.xlsx'); //PINk to VS Sleep
 
+		alert('Input Sheet Successfully Downloaded.');
+		//toast.success('Input Sheet Successfully Downloaded.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 	
 	};
 
@@ -1202,6 +971,7 @@ const Step2Component = () => {
 			const dataSheet = wb.Sheets['Sheet1'];
 			if (!dataSheet || dataSheet == undefined) {
 				alert('Sheet1 Not Found');
+				//toast.error('Sheet1 Not Found', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 				setThreadStatus(null);
 				return;
 			}
@@ -1219,9 +989,9 @@ const Step2Component = () => {
 
 			//Alert if no matching thread lines with the Generic No
 			if (threadSummaryData.length < 1) {
-				alert(
-					`Genrice No. ${pinkInputSheetContext.genericNo}, not found in Thread Summary Sheet.`
-				);
+				alert(`Genrice No. ${pinkInputSheetContext.genericNo}, not found in Thread Summary Sheet.`);
+				//toast.error(`Genrice No. ${pinkInputSheetContext.genericNo}, not found in Thread Summary Sheet.`, { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+				
 				setThreadStatus(null);
 				// setdownloadBtnStatus(true);
 				return;
@@ -1249,9 +1019,118 @@ const Step2Component = () => {
 		else reader.readAsArrayBuffer(files[0]);
 	};
 
+	function bomlabel()
+	{
+		
+		let selectedBomData: any[] = pinkInputSheetContext.BOM;
+
+		if(pinkInputSheetContext.BOM.length === 0)
+		{
+			alert('Please Get Bom Data!');
+			//toast.error('Please Get Bom Data!', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+			return;	
+		}
+
+		selectedBomData.forEach((bomline) => {
+
+				if(bomline[0] !== " NewLine")
+				{
+					var ProcLabel = bomline[2]; 
+					
+					if(ProcLabel.toUpperCase().includes("LABEL") === true)
+					{
+						var SupplierItemNo = bomline[10];
+						var Location = String(bomline[16]).toUpperCase();
+
+						if(SupplierItemNo.toUpperCase() === String("THWL0015").toUpperCase())
+						{
+							if(!Location.includes("USR") || !Location.includes("USW") || !Location.includes("USE") || !Location.includes("CNR") || !Location.includes("CNW"))
+							{
+								bomline[13] = "THWL0015-DPVH NO-10680-Date code";
+							}
+						}
+						else if(SupplierItemNo.toUpperCase() === String("THWL0014").toUpperCase())
+						{
+							if(Location.includes("MEX") || Location.includes("JPN"))
+							{
+								bomline[13] = "THWL0014-DPVH NO";
+							}
+						}
+						else if(SupplierItemNo.toUpperCase() === String("THWL0018").toUpperCase())
+						{
+							if(Location.includes("PAN") || Location.includes("MEX"))
+							{
+								bomline[13] = "THWL0018-DPVH NO";
+							}
+						}
+						else if(SupplierItemNo.toUpperCase() === String("THWL0017").toUpperCase())
+						{
+							if(Location.includes("BRA"))
+							{
+								bomline[13] = pinkInputSheetContext.style + " / Care Reference";
+							}
+						}
+						else if(SupplierItemNo.toUpperCase() === String("THWL0021").toUpperCase())
+						{
+							bomline[13] = "THWL0021 - Bottoms or Shorts";
+						}
+						else if(SupplierItemNo.toUpperCase() === String("THPL0014").toUpperCase())
+						{
+							bomline[13] = "THPL0014 - For Tops";
+						}
+						else if(SupplierItemNo.toUpperCase() === String("THWL0010").toUpperCase())
+						{
+							bomline[13] = "THWL0010 - Based on Bom requirement";
+						}
+					}
+				}
+				
+			});
+		
+		
+		setNEWBOMLINES(selectedBomData);
+		setBomDownloadEnable(true);
+
+		alert('Bom Line Process Completed!');
+		//toast.success('Bom Line Process Completed!', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+ 
+	}
+
+	const onInputSheetDownload_Bom = async () => {
+ 
+		if(pinkInputSheetContext.style.length === 0)
+		{
+			alert('Please Select BOM.');
+			//toast.error('Please Select BOM.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+			return;
+		}
+
+		//const selectedBuyerDivisionName: string = buyerDevisionvalues[0].name;
+		
+		const wb = XLSX.utils.book_new();
+		
+		//BOM removing colors not in CO and Thread lines & Dummy in PLM
+		const filteredBOM: any[] = pinkInputSheetContext.BOM;
+
+		for (var i = 0; i < 14; i++) {
+			filteredBOM.unshift(['']);
+		}
+
+		//BOM sheet
+		const ws2 = XLSX.utils.aoa_to_sheet(filteredBOM);
+		XLSX.utils.book_append_sheet(wb, ws2, 'BOM LINE');// changed StNDdize BOM to BOM LINE 
+
+		XLSX.writeFile(wb, pinkInputSheetContext.style + '_BOM_PVH Sleep Input Sheet.xlsx'); //PINk to VS Sleep
+		alert('Bom Line Downloaded Completed!');
+		//toast.success('Bom Line Downloaded Completed!', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+ 
+	};
+
 	return (
 		<React.Fragment>
+			
 			<Grid container direction='row' justify='space-evenly'>
+			<ToastContainer />
 				<Grid item xs={6} style={{ marginTop: '0.5rem' }}>
 					<label
 						className='form-control'
@@ -1310,25 +1189,24 @@ const Step2Component = () => {
 					<Button
 						variant='contained'
 						color='secondary'
-						onClick={onInputSheetDownload}
-					>
+						onClick={onInputSheetDownload} >
 						Download
 					</Button>
 				</Grid>
 			</Grid>
 
 			{/* {isFileUploaded?  */}
-			<div style={{ marginTop: '2vw' }} className='container'>
+			<div style={{ marginTop: '15px' }}>
 				<div className='row'>
 					<div className='col-sm-8'>
 						<Grid
 							container
 							style={{
 								border: '0.4px solid #C0C0C0	',
-								padding: '0.3vw',
+								padding: '5px',
 								borderRadius: '5px',
 							}}
-							spacing={2}
+							spacing={1}
 						>
 							<Grid item xs={4}>
 								<DropDownComponent
@@ -1363,7 +1241,7 @@ const Step2Component = () => {
 									fieldName='Garment Compositions'
 								/>
 							</Grid>
-							<Grid item xs={4}>
+							<Grid item xs={3}>
 								<DropDownComponent
 									selectedField={selectedBuyerDivisions}
 									data={buyerDivisions}
@@ -1372,7 +1250,7 @@ const Step2Component = () => {
 									fieldName='Buyer Division'
 								/>
 							</Grid>
-							<Grid item xs={2}>
+							<Grid item xs={3}>
 								<DropDownComponent
 									selectedField={selectedSeasonCode}
 									data={seasonalCodes}
@@ -1388,7 +1266,7 @@ const Step2Component = () => {
 									fieldName='Year'
 								/>
 							</Grid>
-							<Grid item xs={2}>
+							<Grid item xs={3}>
 								<DropDownComponent
 									selectedField={selectedInseam}
 									data={inseams}
@@ -1415,14 +1293,14 @@ const Step2Component = () => {
 						</Grid>
 					</div>
 					<div className='col-sm-3'>
-						<Grid
+						<Grid 
 							container
 							style={{
-								border: '0.4px solid #C0C0C0	',
-								padding: '0.3vw',
+								border: '0.4px solid #C0C0C0',
+								padding: '5px',
 								borderRadius: '5px',
 							}}
-							spacing={2}
+							spacing={1}
 						>
 							<Grid item xs={12}>
 								<DropDownComponent
@@ -1450,179 +1328,327 @@ const Step2Component = () => {
 				</div>
 			</div>
 
+			<Tabs style={{ marginTop: "15px", marginRight: 10 }}>
+				<Tab label="CO Lines">
+					<div style={{ marginTop: 10, marginRight: 10 }}>
+						<table className='table table-bordered table-sm' style={{fontSize:"12px"}}>
+								<thead>
+									<tr>
+										<th scope='col'>Color</th>
+										<th scope='col'>Pack Method</th>
+										<th scope='col'>Change</th>
+										<th scope='col'>
+											Customer Delivery Date{' '}
+											<AddCircleIcon
+												onClick={() => onAddDelDateCustomerClicked()}
+												color='secondary'
+											/>
+										</th>
+										<th scope='col'>
+											Planner Delivery Date{' '}
+											<AddCircleIcon
+												onClick={() => onAddDelDatePlannerClicked()}
+												color='secondary'
+											/>
+										</th>
+										<th scope='col'>
+											Warehouse{' '}
+											<AddCircleIcon
+												onClick={() => onAddWarehouseClicked()}
+												color='secondary'
+											/>
+										</th>
+										<th scope='col'>Destination</th>
+										<th scope='col'>VPO No</th>
+										<th scope='col'>Ship Mode</th>
+									</tr>
+								</thead>
+								<tbody>
+									{selectedStyleData.newLines.map(
+										(
+											{
+												id,
+												color,
+												warehouse,
+												destination,
+												vpono,
+												packmethod,
+												rddc,
+												rddp,
+												deliverymethod,
+											},
+											index
+										) => (
+											<tr key={index} style={{ paddingTop: '0vw' }}>
+												<td style={{ paddingRight: '0vw' }}>{color}</td>
+												<td>{packmethod} </td>
+												<td align='center'>
+													<AddCircleIcon
+														color='secondary'
+														onClick={() => onStyleLineChangeClick(id)}
+													/>
+												</td>
+												<td> {rddc}</td>
+												<td> {rddp}</td>
+												<td>{warehouse} </td>
+												<td>{destination} </td>
+												<td>{vpono} </td>
+												<td> {deliverymethod}</td>
+											</tr>
+										)
+									)}
+								</tbody>
+						</table>
 
-			<div style={{ marginTop: '2vw', marginRight: 10 }}>
-			<table className='table table-bordered table-sm' style={{fontSize:"12px"}}>
-					<thead>
-						<tr>
-							<th scope='col'>Color</th>
-							<th scope='col'>Pack Method</th>
-							<th scope='col'>Change</th>
-							<th scope='col'>
-								Customer Delivery Date{' '}
-								<AddCircleIcon
-									onClick={() => onAddDelDateCustomerClicked()}
+						<Modal open={openPackingModal}
+							onClose={handleClose}
+							style={{
+								height: '70vh',
+								width: '40vw',
+								margin: 'auto',
+							}}
+							BackdropComponent={Backdrop} >
+							<>
+							<div style={{backgroundColor:'#fff',width:'500px',paddingTop:'10px',paddingBottom:'10px',paddingLeft:'10px',paddingRight:'10px'}} >
+								<p>Change Pack Method and Warehouse</p>
+								<hr/>
+
+								<DropDownComponent 
+								fieldName='Warehouse' 
+								data={warehouses}
+								onSelectChange={onWareHouseChangeForLine}
+								selectedField={selectedWareHouseForLine} />
+
+								<br/>
+
+								<Button
+									variant='contained'
 									color='secondary'
+									onClick={onUpdatewarehouse}
+								>
+									Update Warehouse
+								</Button>
+
+								<br/>
+								<hr/>
+								<br/>
+
+								<DropDownComponent 
+								fieldName='pack method' 
+								data={[{id:'SIN-Single pc packing',name:'SIN-Single pc packing'},{id:'30P-30 pcs per 1 poly bag',name:'30P-30 pcs per 1 poly bag'}]}
+								onSelectChange={onPackMethodChangeForLine}
+								selectedField={selectedPackMethodForLine}
 								/>
-							</th>
-							<th scope='col'>
-								Planner Delivery Date{' '}
-								<AddCircleIcon
-									onClick={() => onAddDelDatePlannerClicked()}
+
+								<br/>
+
+								<Button
+									variant='contained'
 									color='secondary'
-								/>
-							</th>
-							<th scope='col'>
-								Warehouse{' '}
-								<AddCircleIcon
-									onClick={() => onAddWarehouseClicked()}
+									onClick={onUpdatePackMethod}
+									
+								>
+									Update Pack Method
+								</Button>
+
+								<br/>
+								<hr/>
+								<br/>
+
+								<input style={{ height: '2.5vw' }}
+									name='date'
+									type='date'
+									value={customerDelDate}
+									onChange={(e) => {
+										const { value } = e.target;
+										setcustomerDelDate(value);
+									}}
+									className='form-control' />
+
+								<Button
+									variant='contained'
 									color='secondary'
+									onClick={onUpdateCustomerDelDate}
+									
+								>
+									Customer Delivery Date
+								</Button>
+
+								<br/>
+								<hr/>
+								<br/>
+
+								<input style={{ height: '2.5vw' }}
+									name='date'
+									type='date'
+									value={plannerDelDate}
+									onChange={(e) => {
+										const { value } = e.target;
+										setplannerDelDate(value);
+									}}
+									className='form-control' />
+
+								<Button
+									variant='contained'
+									color='secondary'
+									onClick={onUpdatePlannerDelDate}
+									
+								>
+									Planner Delivery Date
+								</Button>
+
+							</div>
+							</>
+						</Modal>
+
+					</div>
+				</Tab>
+				<Tab label="Bom Lines">
+					<div style={{ marginTop: 10, marginRight: 10 }}>
+						<Button size="small" variant='contained' color='primary' onClick={() => bomlabel()} >
+							Label Process
+						</Button>
+						<Button hidden={!BomDownloadEnable} style={{marginLeft:"15px",color:"white",backgroundColor:"#24a0ed"}} size="small" variant='contained' color='inherit' onClick={onInputSheetDownload_Bom} >
+							Download BOM
+						 </Button>
+						<table className='table table-bordered table-sm' style={{fontSize:"12px"}}>
+								<thead>
+									<tr>
+										<th scope='col'>#</th>
+										<th scope='col'>BOM Category</th>
+										<th scope='col'>RM Procurement Group</th>
+										<th scope='col'>RM Width</th>
+										<th scope='col'>Supplier Item No</th>
+										<th scope='col'>Comment</th>
+										<th scope='col'>Item Name</th>
+										<th scope='col'>Item Description</th>
+										<th scope='col'>GMT ZOption</th>
+									</tr>
+								</thead>
+								<tbody>
+									{pinkInputSheetContext.BOM.map((row,index) => ( 
+										(row[0] === " NewLine") ? (<></>) : (<tr style={{ paddingTop: '0vw' }}>
+										<td>{index}</td>
+										<td>{row[1]}</td>
+										<td>{row[2]}</td>
+										<td>{row[9]}</td>
+										<td>{row[10]}</td>
+										<td>{row[11]}</td>
+										<td>{row[12]}</td>
+										<td>{row[13]}</td>
+										<td>{row[16]}</td>
+									</tr>)
+										
+										)
+									)}
+								</tbody>
+						</table>
+
+						<Modal open={openPackingModal}
+							onClose={handleClose}
+							style={{
+								height: '70vh',
+								width: '40vw',
+								margin: 'auto',
+							}}
+							BackdropComponent={Backdrop} >
+							<>
+							<div style={{backgroundColor:'#fff',width:'500px',paddingTop:'10px',paddingBottom:'10px',paddingLeft:'10px',paddingRight:'10px'}} >
+								<p>Change Pack Method and Warehouse</p>
+								<hr/>
+
+								<DropDownComponent 
+								fieldName='Warehouse' 
+								data={warehouses}
+								onSelectChange={onWareHouseChangeForLine}
+								selectedField={selectedWareHouseForLine} />
+
+								<br/>
+
+								<Button
+									variant='contained'
+									color='secondary'
+									onClick={onUpdatewarehouse}
+								>
+									Update Warehouse
+								</Button>
+
+								<br/>
+								<hr/>
+								<br/>
+
+								<DropDownComponent 
+								fieldName='pack method' 
+								data={[{id:'SIN-Single pc packing',name:'SIN-Single pc packing'},{id:'30P-30 pcs per 1 poly bag',name:'30P-30 pcs per 1 poly bag'}]}
+								onSelectChange={onPackMethodChangeForLine}
+								selectedField={selectedPackMethodForLine}
 								/>
-							</th>
-							<th scope='col'>Destination</th>
-							<th scope='col'>VPO No</th>
-							<th scope='col'>Ship Mode</th>
-						</tr>
-					</thead>
-					<tbody>
-						{selectedStyleData.newLines.map(
-							(
-								{
-									id,
-									color,
-									warehouse,
-									destination,
-									vpono,
-									packmethod,
-									rddc,
-									rddp,
-									deliverymethod,
-								},
-								index
-							) => (
-								<tr key={index} style={{ paddingTop: '0vw' }}>
-									<td style={{ paddingRight: '0vw' }}>{color}</td>
-									<td>{packmethod} </td>
-									<td align='center'>
-										<AddCircleIcon
-											color='secondary'
-											onClick={() => onStyleLineChangeClick(id)}
-										/>
-									</td>
-									<td> {rddc}</td>
-									<td> {rddp}</td>
-									<td>{warehouse} </td>
-									<td>{destination} </td>
-									<td>{vpono} </td>
-									<td> {deliverymethod}</td>
-								</tr>
-							)
-						)}
-					</tbody>
-				</table>
-			</div>
-			<Modal
-				open={openPackingModal}
-				onClose={handleClose}
-				style={{
-					height: '70vh',
-					width: '40vw',
-					margin: 'auto',
-				}}
-				BackdropComponent={Backdrop}
-			>
-			<>
-			<div style={{backgroundColor:'#fff',width:'500px',paddingTop:'10px',paddingBottom:'10px',paddingLeft:'10px',paddingRight:'10px'}} >
-				<p>Change Pack Method and Warehouse</p>
-				<hr/>
 
-				<DropDownComponent 
-				fieldName='Warehouse' 
-				data={warehouses}
-				onSelectChange={onWareHouseChangeForLine}
-				selectedField={selectedWareHouseForLine} />
+								<br/>
 
-				<br/>
+								<Button
+									variant='contained'
+									color='secondary'
+									onClick={onUpdatePackMethod}
+									
+								>
+									Update Pack Method
+								</Button>
 
-				<Button
-					variant='contained'
-					color='secondary'
-					onClick={onUpdatewarehouse}
-				>
-					Update Warehouse
-				</Button>
+								<br/>
+								<hr/>
+								<br/>
 
-				<br/>
-				<hr/>
-				<br/>
+								<input style={{ height: '2.5vw' }}
+									name='date'
+									type='date'
+									value={customerDelDate}
+									onChange={(e) => {
+										const { value } = e.target;
+										setcustomerDelDate(value);
+									}}
+									className='form-control' />
 
-				<DropDownComponent 
-				fieldName='pack method' 
-				data={[{id:'SIN-Single pc packing',name:'SIN-Single pc packing'},{id:'30P-30 pcs per 1 poly bag',name:'30P-30 pcs per 1 poly bag'}]}
-				onSelectChange={onPackMethodChangeForLine}
-				selectedField={selectedPackMethodForLine}
-				/>
+								<Button
+									variant='contained'
+									color='secondary'
+									onClick={onUpdateCustomerDelDate}
+									
+								>
+									Customer Delivery Date
+								</Button>
 
-				<br/>
+								<br/>
+								<hr/>
+								<br/>
 
-				<Button
-					variant='contained'
-					color='secondary'
-					onClick={onUpdatePackMethod}
-					
-				>
-					Update Pack Method
-				</Button>
+								<input style={{ height: '2.5vw' }}
+									name='date'
+									type='date'
+									value={plannerDelDate}
+									onChange={(e) => {
+										const { value } = e.target;
+										setplannerDelDate(value);
+									}}
+									className='form-control' />
 
-				<br/>
-				<hr/>
-				<br/>
+								<Button
+									variant='contained'
+									color='secondary'
+									onClick={onUpdatePlannerDelDate}
+									
+								>
+									Planner Delivery Date
+								</Button>
 
-				<input style={{ height: '2.5vw' }}
-					name='date'
-					type='date'
-					value={customerDelDate}
-					onChange={(e) => {
-						const { value } = e.target;
-						setcustomerDelDate(value);
-					}}
-					className='form-control' />
+							</div>
+							</>
+						</Modal>
 
-				<Button
-					variant='contained'
-					color='secondary'
-					onClick={onUpdateCustomerDelDate}
-					
-				>
-					Customer Delivery Date
-				</Button>
-
-				<br/>
-				<hr/>
-				<br/>
-
-				<input style={{ height: '2.5vw' }}
-					name='date'
-					type='date'
-					value={plannerDelDate}
-					onChange={(e) => {
-						const { value } = e.target;
-						setplannerDelDate(value);
-					}}
-					className='form-control' />
-
-				<Button
-					variant='contained'
-					color='secondary'
-					onClick={onUpdatePlannerDelDate}
-					
-				>
-					Planner Delivery Date
-				</Button>
-
-			</div>
-			</>
-			</Modal>
+					</div>
+				</Tab>
+			</Tabs>
+ 
 		</React.Fragment>
 	);
 };

@@ -14,7 +14,7 @@ function GMTcolor(value)
 	}
 	else if(value.includes("-") === true)
 	{
-		var arr = value.split("-");      // Split the string using dot as separator
+		var arr = value.split("-");      
 		var lastVal = arr.pop();
 		var newval =  value.replace('-'+lastVal,'');
 
@@ -69,6 +69,76 @@ function GMTcolor(value)
 	};
 };
 
+export const BOMDataforPVH = (line) => {
+
+	function GMTcolor(value)
+	{
+		if(value === "Colors-All")
+		{
+			return value;
+		}
+		else if(value.includes("-Unavailable in M3") === true)
+		{
+			return value.replace('-Unavailable in M3','');
+		}
+		else if(value.includes("-") === true)
+		{
+			var arr = value.split("-");      
+			var lastVal = arr.pop();
+			var newval =  value.replace('-'+lastVal,'');
+	
+			return newval;
+		}
+		else
+		{
+			return value;
+		}
+	}
+	
+		return {
+			' NewLine':line['NewLine'],
+			' BOMCategory *': line['BOMCategory'],//changed from Main category
+			' RMProcurementGroup *': line['RMProcurementGroup'],
+			' M3Item Code': line['M3Item Code'],
+			' HierarchyLevel1': line['HierarchyLevel1'],
+			' HierarchyLevel2': line['HierarchyLevel2'],
+			' HierarchyLevel3': line['HierarchyLevel3'],
+			' HierarchyLevel4': line['HierarchyLevel4'],
+			' HierarchyLevel5': line['HierarchyLevel5'],
+			' RM Width': line['RM Width'],
+			' SupplierItemNo *': line['SupplierItemNo'],
+			' Comment': line['Comment'],
+			' ItemName *': line['ItemName'],
+			' ItemDescription *': line['ItemDescription'],
+			' BrandCategory *': line['Brand Category'],
+			' GMTColor': GMTcolor(line['GMTColor']),
+			' GMTZOption': line['GMTZOption'],
+			' GMTSize': line['GMTSize'],
+			' RMZOption': line['RMZOption'],
+			' RMColor': GMTcolor(line['RMColor']),
+			' RMSize': line['RMSize'],
+			' YY *': line['YY'],
+			' Wastage %*': line['Wastage %'],
+			' SupplierNominationStatus': line['SupplierNominationStatus'],
+			' SKUUOM *': line['SKU UOM'],
+			' PurchaseUOM *': line['Purchase UOM'],
+			' Conversion': line['Conversion'],
+			' PurchasePrice *': line['PurchasePrice'],
+			' Freight': line['Freight'],
+			' TC': line['TC'],
+			' MOQ': line['MOQ'],
+			' OrderMultiple': line['OrderMultiple'],
+			' TimeHorizon': line['TimeHorizon'],
+			' SupplierTolarance': line['SupplierTolarance'],
+			' Supplier': line['Supplier'],
+			' ManLeadTime *': line['ManLeadTime'],
+			' ModeOfShipment *': line['ModeOfShipment'],
+			' RMDeliveryTerm *': line['RMDeliveryTerm'],
+			' SourcingMerchant *': line['SourcingMerchant'],
+		};
+	};
+	
+
 export const COTblData = (
 	includeLogo,
 	newStyleno,
@@ -121,18 +191,12 @@ export const COTblData = (
 			' TotalQuantity',
 			' XXS',
 			' XS',
-			' S',
-			' M',
-			' L',
+			' SMALL',
+			' MED',
+			' LARGE',
 			' XL',
 			' XXL',
-			' XS/S',
-			' M/L',
-			' XL/XXL',
-			' XS-XXL.S',
-			' XS-XXL.L',
-			' XS-XXL.R',
-			' OS',
+			' XXXL',
 			' CO Number',
 		],
 	];
@@ -251,21 +315,17 @@ export const COTblData_Aritzia = (
 			' PackMethod *',
 			' ZOption *',// FTR to Option
 			' TotalQuantity',
-			' '+selectedStyleData.sizeheaders.size1,
-			' '+selectedStyleData.sizeheaders.size2,
-			' '+selectedStyleData.sizeheaders.size3,
-			' '+selectedStyleData.sizeheaders.size4,
-			' '+selectedStyleData.sizeheaders.size5,
-			' '+selectedStyleData.sizeheaders.size6,
-			' '+selectedStyleData.sizeheaders.size7,
-			' '+selectedStyleData.sizeheaders.size8,
-			' '+selectedStyleData.sizeheaders.size9,
-			' '+selectedStyleData.sizeheaders.size10,
-			' '+selectedStyleData.sizeheaders.size11,
-			' '+selectedStyleData.sizeheaders.size12,
-			' '+selectedStyleData.sizeheaders.size13,
-			' '+selectedStyleData.sizeheaders.size14,
-			' CO Number',
+			' ',
+			' ',
+			' ',
+			' ',
+			' ',
+			' ',
+			' ',
+			' ',
+			' ',
+			' ',
+			' ',
 		],
 	];
 	return template;

@@ -39,11 +39,15 @@ import {
 import { convertExcelDateToJsLocaleDateString } from '../utils/conversions';
 import { getBOMThreadLinesLogo, getThreadLines } from '../Services/threadsheet';
 import { OpsTrackSheetFormat } from '../Services/formatExcel';
+import moment from 'moment';
 
 const Step2Component = () => {
 	
 	const pinkInputSheetContext = useContext(PinkInputSheetContext);
 	const vsInputSheetContext = useContext(VsInputSheetContext);
+
+	const [orderPrecentage, setorderPrecentage] = useState(100);
+
 	const [filename, setFileName] = useState('Select OLR File');
 	const [selectedWareHouse, setSelectedWarehouse] = useState<any>('');
 	const [selectedWareHouseForLine, setSelectedWarehouseForLine] = useState<any>('');
@@ -58,6 +62,7 @@ const Step2Component = () => {
 	const [requestDelDate, setrequestDelDate] = useState('');
 	const [selectedSeasonCode, setselectedSeasonCode] = useState<any>('');
 	const [selectedYearCode, setselectedYearCode] = useState<any>('');
+	const [selectedSizetemp, setselectedSizetemp] = useState<any>('');
 	const [selectedInseam, setselectedInseam] = useState('');
 	const [selectedPackingType, setSelectedPackingType] = useState('');
 	const [selectedM3BuyerDivision, setselectedM3BuyerDivision] = useState<any>('');
@@ -66,6 +71,8 @@ const Step2Component = () => {
 	const [threadData, setThreadData] = useState<any>([]);
 	const [openPackingModal, setOpenPackingModal] = useState<boolean>(false);
 	const COColors: any[] = [];
+
+	const [ERRORLIST, setERRORLIST] = useState<any>([]);
 
 	const handleClose = () => setOpenPackingModal(false);
 	const [uniq_linekey, setuniq_linekey] = useState<any>('');
@@ -78,6 +85,7 @@ const Step2Component = () => {
 	const changeGarmentCom = (id) => setGarmentCompositions(id);
 	const changeSeasonalCode = (id) => setselectedSeasonCode(id);
 	const changeYearCode = (id) => setselectedYearCode(id);
+	const changeSizetemp = (id) => setselectedSizetemp(id);
 	const changeInseam = (id) => setselectedInseam(id);
 	const changePackingType = (id) => setSelectedPackingType(id);
 
@@ -100,11 +108,29 @@ const Step2Component = () => {
 	//read OLR file
 	const onFileSelect = async (e) => {
 
-		//if(pinkInputSheetContext.style.length < 1)
-		//{
-			//alert('Please Select/Sync Style and BOM.');
-			//return;
-		//}
+		if(pinkInputSheetContext.style.length < 1)
+		{
+			alert('Please Select/Sync Style and BOM.');
+			return;
+		}
+
+		if(orderPrecentage.toString() === "")
+		{
+			alert('Please Enter Order Qty Ratio (Minimum value is 100).');
+			return;
+		}
+
+		if(orderPrecentage < 100)
+		{
+			alert('Please Enter Order Qty Ratio (Minimum value is 100).');
+			return;
+		}
+
+		if(selectedSizetemp.length < 1)
+		{
+			alert('Please Select Size Template.');
+			return;
+		}
 
 		const files = e.target.files;
 		// await setisFileReading(true);
@@ -159,8 +185,6 @@ const Step2Component = () => {
 					}
 				});
 
-				
-
 				if (sheetStyles.length > 0) {
 					
 					//Get season based on season code (OLR)
@@ -189,20 +213,26 @@ const Step2Component = () => {
 					pinkInputSheetContext.changeGenericNo(
 						sheetStyles[0][ecvisionHeaderNames.GENERICNO]
 					);
+					
 					changeSelectedStyleNo(uniqueStylesWithData);
 
-					alert(sheetStyles.length.toString()+' No of Related Rows Found in OLR.');
+					alert(sheetStyles.length.toString() +' No of Related Rows Found in OLR.');
+					setFileName("Select OLR File");
 					
 				} else {
 					alert('No Style ' + pinkInputSheetContext.style);
+					setFileName("Select OLR File");
 				}
 			} else {
 				alert('No Sheet named OrderListReport');
+				setFileName("Select OLR File");
 			}
 		};
 
 		if (rABS) reader.readAsBinaryString(files[0]);
 		else reader.readAsArrayBuffer(files[0]); 
+
+		
 		
 	};
 
@@ -286,69 +316,265 @@ const Step2Component = () => {
 
 			const masterColorKeys = selectedStylesData.lines
 				.filter((l) => l[ecvisionHeaderNames.MASTCOLORCODE])
-				.map(
-					(l) =>
-						l[ecvisionHeaderNames.MASTCOLORCODE] + l[ecvisionHeaderNames.VPONO] + l[ecvisionHeaderNames.SHIPDATE].getTime()
-				);
+				.map( (l) => l[ecvisionHeaderNames.MASTCOLORCODE] + l[ecvisionHeaderNames.VPONO] + l[ecvisionHeaderNames.SHIPDATE].getTime() );
+			
 			const uniquemasterColorKeys = [...new Set([...masterColorKeys])];
-
+			
 			uniquemasterColorKeys.forEach((code) => {
 				const selectedColorLines = selectedStylesData.lines.filter(
 					(l) =>
-						l[ecvisionHeaderNames.MASTCOLORCODE] + l[ecvisionHeaderNames.VPONO] + l[ecvisionHeaderNames.SHIPDATE].getTime() ==
-						code
+						l[ecvisionHeaderNames.MASTCOLORCODE] + l[ecvisionHeaderNames.VPONO] + l[ecvisionHeaderNames.SHIPDATE].getTime() == code
 				);
  
-				let tempXXS, tempXS, tempS, tempM, tempL, tempXL, tempXXL, tempXS_S, tempM_L, tempXL_XXL, tempXS_XXL_S, tempXS_XXL_R, tempXS_XXL_L, tempOS;
-				selectedColorLines.forEach((l) => {
-					const tempSize = l[ecvisionHeaderNames.MASTSIZEDESC]
-						.toUpperCase()
-						.trim();
-						if (tempSize.includes('XXS')) {
-							tempXXS = l[ecvisionHeaderNames.ORDERQTY];
-						} else if (tempSize.includes('XS')) {
-							tempXS = l[ecvisionHeaderNames.ORDERQTY];
-						} else if (tempSize.includes('S')) {
-							tempS = l[ecvisionHeaderNames.ORDERQTY];
-						} else if (tempSize.includes('M')) {
-							tempM = l[ecvisionHeaderNames.ORDERQTY];
-						} else if (tempSize.includes('L')) {
-							tempL = l[ecvisionHeaderNames.ORDERQTY];
-						} else if (tempSize.includes('XL')) {
-							tempXL = l[ecvisionHeaderNames.ORDERQTY];
-						} else if (tempSize.includes('XXL')) {
-							tempXXL = l[ecvisionHeaderNames.ORDERQTY];
-						} else if (tempSize.includes('XS/S')) {
-							tempXS_S = l[ecvisionHeaderNames.ORDERQTY];
-						} else if (tempSize.includes('M/L')) {
-							tempM_L = l[ecvisionHeaderNames.ORDERQTY];
-						} else if (tempSize.includes('XL/XXL')) {
-							tempXL_XXL = l[ecvisionHeaderNames.ORDERQTY];
-						} else if (tempSize.includes('XS-XXL.S')) {
-							tempXS_XXL_S = l[ecvisionHeaderNames.ORDERQTY];
-						} else if (tempSize.includes('XS-XXL.R')) {
-							tempXS_XXL_R = l[ecvisionHeaderNames.ORDERQTY];
-						} else if (tempSize.includes('XS-XXL.L')) {
-							tempXS_XXL_L = l[ecvisionHeaderNames.ORDERQTY];
-						} else if (tempSize.includes('OS')) {
-							tempOS = l[ecvisionHeaderNames.ORDERQTY];
+				
+
+				function sizetemplate(sizeid)
+				{
+					if(selectedSizetemp === "NORMAL")
+					{
+						if(sizeid === 1)
+						{
+							return 'XXS';
 						}
+						else if(sizeid === 2)
+						{
+							return 'XS';
+						}
+						else if(sizeid === 3)
+						{
+							return 'SMALL';
+						}
+						else if(sizeid === 4)
+						{
+							return 'MED';
+						}
+						else if(sizeid === 5)
+						{
+							return 'LARGE';
+						}
+						else if(sizeid === 6)
+						{
+							return 'XL';
+						}
+						else if(sizeid === 7)
+						{
+							return 'XXL';
+						}
+						else if(sizeid === 8)
+						{
+							return 'XXXL';
+						}
+						else
+						{
+							return '';
+						}
+					}
+					else if(selectedSizetemp === "REG")
+					{
+						if(sizeid === 1)
+						{
+							return 'XXS REG';
+						}
+						else if(sizeid === 2)
+						{
+							return 'XS REG';
+						}
+						else if(sizeid === 3)
+						{
+							return 'SMALL REG';
+						}
+						else if(sizeid === 4)
+						{
+							return 'MED REG';
+						}
+						else if(sizeid === 5)
+						{
+							return 'LARGE REG';
+						}
+						else if(sizeid === 6)
+						{
+							return 'XL REG';
+						}
+						else if(sizeid === 7)
+						{
+							return 'XXL REG';
+						}
+						else if(sizeid === 8)
+						{
+							return 'XXXL REG';
+						}
+						else
+						{
+							return '';
+						}
+					}
+					else if(selectedSizetemp === "LONG")
+					{
+						if(sizeid === 1)
+						{
+							return 'XXS LONG';
+						}
+						else if(sizeid === 2)
+						{
+							return 'XS LONG';
+						}
+						else if(sizeid === 3)
+						{
+							return 'SMALL LONG';
+						}
+						else if(sizeid === 4)
+						{
+							return 'MED LONG';
+						}
+						else if(sizeid === 5)
+						{
+							return 'LARGE LONG';
+						}
+						else if(sizeid === 6)
+						{
+							return 'XL LONG';
+						}
+						else if(sizeid === 7)
+						{
+							return 'XXL LONG';
+						}
+						else if(sizeid === 8)
+						{
+							return 'XXXL LONG';
+						}
+						else
+						{
+							return '';
+						}
+					}
+					else if(selectedSizetemp === "SHORT")
+					{
+						if(sizeid === 1)
+						{
+							return 'XXS SHORT';
+						}
+						else if(sizeid === 2)
+						{
+							return 'XS SHORT';
+						}
+						else if(sizeid === 3)
+						{
+							return 'SMALL SHORT';
+						}
+						else if(sizeid === 4)
+						{
+							return 'MED SHORT';
+						}
+						else if(sizeid === 5)
+						{
+							return 'LARGE SHORT';
+						}
+						else if(sizeid === 6)
+						{
+							return 'XL SHORT';
+						}
+						else if(sizeid === 7)
+						{
+							return 'XXL SHORT';
+						}
+						else if(sizeid === 8)
+						{
+							return 'XXXL SHORT';
+						}
+						else
+						{
+							return '';
+						}
+					}
+					else if(selectedSizetemp === "DUAL")
+					{
+						if(sizeid === 1)
+						{
+							return 'XS/S';
+						}
+						else if(sizeid === 2)
+						{
+							return 'M/L';
+						}
+						else if(sizeid === 3)
+						{
+							return 'XLXXL';
+						}
+						else
+						{
+							return '';
+						}
+					}
+					else
+					{
+						return '';
+					}
+				}
+
+				let tempXXS, tempXS, tempSMALL, tempMED, tempLARGE, tempXL, tempXXL, tempXXXL;
+				
+				selectedColorLines.forEach((l) => {
+						const tempSize = l[ecvisionHeaderNames.MASTSIZEDESC].toUpperCase().trim();
+						if(selectedSizetemp === "DUAL")
+						{
+							if (tempSize === sizetemplate(1)) {
+								tempXXS = l[ecvisionHeaderNames.ORDERQTY];
+							} else if (tempSize === sizetemplate(2)) {
+								tempXS = l[ecvisionHeaderNames.ORDERQTY];
+							} else if (tempSize === sizetemplate(3)) {
+								tempSMALL = l[ecvisionHeaderNames.ORDERQTY];
+							} else if (tempSize === sizetemplate(4)) {
+								tempMED = 0;
+							} else if (tempSize === sizetemplate(5)) {
+								tempLARGE = 0;
+							} else if (tempSize === sizetemplate(6)) {
+								tempXL = 0;
+							} else if (tempSize === sizetemplate(7)) {
+								tempXXL = 0;
+							} else if (tempSize === sizetemplate(8)) {
+								tempXXXL = 0;
+							}
+						}
+						else
+						{
+							if (tempSize === sizetemplate(1)) {
+								tempXXS = l[ecvisionHeaderNames.ORDERQTY];
+							} else if (tempSize === sizetemplate(2)) {
+								tempXS = l[ecvisionHeaderNames.ORDERQTY];
+							} else if (tempSize === sizetemplate(3)) {
+								tempSMALL = l[ecvisionHeaderNames.ORDERQTY];
+							} else if (tempSize === sizetemplate(4)) {
+								tempMED = l[ecvisionHeaderNames.ORDERQTY];
+							} else if (tempSize === sizetemplate(5)) {
+								tempLARGE = l[ecvisionHeaderNames.ORDERQTY];
+							} else if (tempSize === sizetemplate(6)) {
+								tempXL = l[ecvisionHeaderNames.ORDERQTY];
+							} else if (tempSize === sizetemplate(7)) {
+								tempXXL = l[ecvisionHeaderNames.ORDERQTY];
+							} else if (tempSize === sizetemplate(8)) {
+								tempXXXL = l[ecvisionHeaderNames.ORDERQTY];
+							}
+						}
+						
 				});
 
-				const SETSIZE_XXS = tempXXS > 0 ? tempXXS : 0;
-				const SETSIZE_XS = tempXS > 0 ? tempXS : 0;
-				const SETSIZE_S = tempS > 0 ? tempS : 0;
-				const SETSIZE_M = tempM > 0 ? tempM : 0;
-				const SETSIZE_L = tempL > 0 ? tempL : 0;
-				const SETSIZE_XL = tempXL > 0 ? tempXL : 0;
-				const SETSIZE_XXL = tempXXL > 0 ? tempXXL : 0;
-				const SETSIZE_XS_S = tempXS_S > 0 ? tempXS_S : 0;
-				const SETSIZE_M_L = tempM_L > 0 ? tempM_L : 0;
-				const SETSIZE_XL_XXL = tempXL_XXL > 0 ? tempXL_XXL : 0;
-				const SETSIZE_XS_XXL_S = tempXS_XXL_S > 0 ? tempXS_XXL_S : 0;
-				const SETSIZE_XS_XXL_R = tempXS_XXL_R > 0 ? tempXS_XXL_R : 0;
-				const SETSIZE_XS_XXL_L = tempXS_XXL_L > 0 ? tempXS_XXL_L : 0;
-				const SETSIZE_OS = tempOS > 0 ? tempOS : 0;
+				const tempval_tempXXS = tempXXS > 0 ? tempXXS : 0;
+				const tempval_tempXS = tempXS > 0 ? tempXS : 0;
+				const tempval_tempSMALL = tempSMALL > 0 ? tempSMALL : 0;
+				const tempval_tempMED = tempMED > 0 ? tempMED : 0;
+				const tempval_tempLARGE = tempLARGE > 0 ? tempLARGE : 0;
+				const tempval_tempXL = tempXL > 0 ? tempXL : 0;
+				const tempval_tempXXL = tempXXL > 0 ? tempXXL : 0;
+				const tempval_tempXXXL = tempXXXL > 0 ? tempXXXL : 0;
+
+				const SETSIZE_XXS = tempval_tempXXS > 0 ? Math.round((Number(tempval_tempXXS) / 100) * orderPrecentage) : 0;
+				const SETSIZE_XS = tempval_tempXS > 0 ? Math.round((Number(tempval_tempXS) / 100) * orderPrecentage) : 0;
+				const SETSIZE_SMALL = tempval_tempSMALL > 0 ? Math.round((Number(tempval_tempSMALL) / 100) * orderPrecentage) : 0;
+				const SETSIZE_MED = tempval_tempMED > 0 ? Math.round((Number(tempval_tempMED) / 100) * orderPrecentage) : 0;
+				const SETSIZE_LARGE = tempval_tempLARGE > 0 ? Math.round((Number(tempval_tempLARGE) / 100) * orderPrecentage) : 0;
+				const SETSIZE_XL = tempval_tempXL > 0 ? Math.round((Number(tempval_tempXL) / 100) * orderPrecentage) : 0;
+				const SETSIZE_XXL = tempval_tempXXL > 0 ? Math.round((Number(tempval_tempXXL) / 100) * orderPrecentage) : 0;
+				const SETSIZE_XXXL = tempval_tempXXXL > 0 ? Math.round((Number(tempval_tempXXXL) / 100) * orderPrecentage) : 0;
 
 				const lineToBeCreated = {
 					masterColorKey: code,
@@ -365,21 +591,13 @@ const Step2Component = () => {
 					CUSTSTYLEDESC: selectedColorLines[0].CUSTSTYLEDESC,
 					SETSIZE_XXS,
 					SETSIZE_XS,
-					SETSIZE_S,
-					SETSIZE_M,
-					SETSIZE_L,
+					SETSIZE_SMALL,
+					SETSIZE_MED,
+					SETSIZE_LARGE,
 					SETSIZE_XL,
 					SETSIZE_XXL,
-					SETSIZE_XS_S,
-					SETSIZE_M_L,
-					SETSIZE_XL_XXL,
-					SETSIZE_XS_XXL_S,
-					SETSIZE_XS_XXL_R,
-					SETSIZE_XS_XXL_L,
-					SETSIZE_OS,
-					TOTALQTY: parseInt(SETSIZE_XXS) + parseInt(SETSIZE_XS) + parseInt(SETSIZE_S) + 
-					parseInt(SETSIZE_M) + parseInt(SETSIZE_L) + parseInt(SETSIZE_XL) + parseInt(SETSIZE_XXL) + parseInt(SETSIZE_XS_S) + 
-					parseInt(SETSIZE_M_L) + parseInt(SETSIZE_XL_XXL) + parseInt(SETSIZE_XS_XXL_S) + parseInt(SETSIZE_XS_XXL_R) + parseInt(SETSIZE_XS_XXL_L) + parseInt(SETSIZE_XS_XXL_L) + parseInt(SETSIZE_OS),
+					SETSIZE_XXXL,
+					TOTALQTY: SETSIZE_XXS + SETSIZE_XS + SETSIZE_SMALL + SETSIZE_MED + SETSIZE_LARGE + SETSIZE_XL + SETSIZE_XXL + SETSIZE_XXXL,
 					DIVISIONCODE: selectedColorLines[0][ecvisionHeaderNames.DIVISIONCODE],
 					MASTSIZEDESC: selectedColorLines[0][ecvisionHeaderNames.MASTSIZEDESC],
 					FACTORYCOST: selectedColorLines[0][ecvisionHeaderNames.FACTORYCOST],
@@ -390,44 +608,29 @@ const Step2Component = () => {
 					selectedStylesData.newLines.push(lineToBeCreated);
 				}
 			});
-
+			
 			selectedStylesData.newLines.forEach((line) => {
 				
-				line.destination = line[ecvisionHeaderNames.SHIPTONAME]
-					.toLowerCase()
-					.includes(ecvisionHeaderNames.DC2)
+				line.destination = line[ecvisionHeaderNames.SHIPTONAME].toLowerCase().includes(ecvisionHeaderNames.DC2)
 					? ecvisionHeaderNames.USA03
-					: line[ecvisionHeaderNames.SHIPTONAME]
-					.toLowerCase()
-					.includes(ecvisionHeaderNames.DC4)
+					: line[ecvisionHeaderNames.SHIPTONAME].toLowerCase().includes(ecvisionHeaderNames.DC4)
 					? ecvisionHeaderNames.USA03
-					: line[ecvisionHeaderNames.SHIPTONAME]
-					.toLowerCase()
-					.includes(ecvisionHeaderNames.DC5)
+					: line[ecvisionHeaderNames.SHIPTONAME].toLowerCase().includes(ecvisionHeaderNames.DC5)
 					? ecvisionHeaderNames.USA03
-					: line[ecvisionHeaderNames.SHIPTONAME]
-					.toLowerCase()
-					.includes(ecvisionHeaderNames.DC6)
+					: line[ecvisionHeaderNames.SHIPTONAME].toLowerCase().includes(ecvisionHeaderNames.DC6)
 					? ecvisionHeaderNames.USA03
-					: line[ecvisionHeaderNames.SHIPTONAME]
-					.toLowerCase()
-					.includes(ecvisionHeaderNames.Creative)
+					: line[ecvisionHeaderNames.SHIPTONAME].toLowerCase().includes(ecvisionHeaderNames.Creative)
 					? ecvisionHeaderNames.USA03
-					: line[ecvisionHeaderNames.SHIPTONAME]
-					.toLowerCase()
-					.includes(ecvisionHeaderNames.GLP)
+					: line[ecvisionHeaderNames.SHIPTONAME].toLowerCase().includes(ecvisionHeaderNames.GLP)
 					? ecvisionHeaderNames.CHN01
-					: line[ecvisionHeaderNames.SHIPTONAME]
-						.toLowerCase()
-						.includes(ecvisionHeaderNames.Next)
-						? ecvisionHeaderNames.GBR01
-						: '';
+					: line[ecvisionHeaderNames.SHIPTONAME].toLowerCase().includes(ecvisionHeaderNames.Next)
+					? ecvisionHeaderNames.GBR01
+					: '';
 
-				line.packMethod = line[ecvisionHeaderNames.SHIPTONAME]
-					.toLowerCase()
-					.includes(ecvisionHeaderNames.DC5)
+				line.packMethod = line[ecvisionHeaderNames.SHIPTONAME].toLowerCase().includes(ecvisionHeaderNames.DC5)
 					? ecvisionHeaderNames.SinglePack
 					: ecvisionHeaderNames.ThirtyPack;
+
 				line.wareHouse = '';
 				line.requestDelDate = '';
 				line.PCDDate = calculateDate(line[ecvisionHeaderNames.SHIPDATE]);
@@ -513,6 +716,8 @@ const Step2Component = () => {
 
 	//When click download button Code execute from here
 	const onInputSheetDownload = async () => {
+
+		const error_data: any[] = [];
 		
 		selectedStyleData.newLines = upOLRDATASET.newLines;
 		
@@ -593,8 +798,19 @@ const Step2Component = () => {
 
 		newStyleno += selectedInseam;
 
-		if(selectedInseam.length > 0)
+		if(selectedSizetemp === "LONG")
 		{
+			newStyleno += "L";
+			newStyleno += pinkInputSheetContext.style.slice(-4);
+		}
+		else if(selectedSizetemp === "REG")
+		{
+			newStyleno += "R";
+			newStyleno += pinkInputSheetContext.style.slice(-4);
+		}
+		else if(selectedSizetemp === "SHORT")
+		{
+			newStyleno += "S";
 			newStyleno += pinkInputSheetContext.style.slice(-4);
 		}
 		else
@@ -619,8 +835,8 @@ const Step2Component = () => {
 		
 		const selectedInseamName: string = inseams.find(i => i.id === selectedInseam)?.name ?? '';
 		
-		selectedStyleData.newLines = selectedStyleData.newLines.filter(i => i.DIVISIONCODE === selectedBuyerDivisionName && i.MASTSIZEDESC.includes(selectedInseamName));
-		
+		//selectedStyleData.newLines = selectedStyleData.newLines.filter(i => i.DIVISIONCODE === selectedBuyerDivisionName && i.MASTSIZEDESC.includes(selectedInseamName));
+		selectedStyleData.newLines = selectedStyleData.newLines.filter(i => i.DIVISIONCODE === selectedBuyerDivisionName);
 		// if selected packing type is Single, no nrrd to change the row information,
 		// else if selected packing type is 'Double', copy the individual VPO number with row and then add TOP and Bottom to the end of COlOR column.
 
@@ -708,45 +924,69 @@ const Step2Component = () => {
 			//);
 
 			//Create CO Table lines
-			const rowToAdd = [
-				'FALSE', // added NewLine into the sheet
-				line.wareHouse,
-				line.destination,
-				selectedStyleData.styleNo,//line.CUSTSTYLE + '/' + line.CUSTSTYLEDESC.slice(0, 6),
-				new Date(line.requestDelDate),
-				new Date(line.requestDelDate),
-				new Date(line.requestDelDate), //FOB Date
-				new Date(line[ecvisionHeaderNames.NDCDATE]).toLocaleDateString(),
-				new Date(line.PCDDate), //PCDDate
-				line[ecvisionHeaderNames.MASTCOLORDESC],
-				line[ecvisionHeaderNames.VPONO],
-				line[ecvisionHeaderNames.CPO],
-				//FOB.FOB,
-				deliveryMethod,//'DeliveryMethod *'
-				parseFloat(line[ecvisionHeaderNames.MIDDLEMANCHARGES]) + parseFloat(line[ecvisionHeaderNames.FACTORYCOST]),
-				'Free On Board-FOB',//'DeliveryTerm *'
-				line.packMethod,
-				zft,
-				line[ecvisionHeaderNames.TOTALQTY],
-				line["SETSIZE_XXS"],
-				line["SETSIZE_XS"],
-				line["SETSIZE_S"],
-				line["SETSIZE_M"],
-				line["SETSIZE_L"],
-				line["SETSIZE_XL"],
-				line["SETSIZE_XXL"],
-				line["SETSIZE_XS_S"],
-				line["SETSIZE_M_L"],
-				line["SETSIZE_XL_XXL"],
-				line["SETSIZE_XS_XXL_S"],
-				line["SETSIZE_XS_XXL_R"],
-				line["SETSIZE_XS_XXL_L"],
-				line["SETSIZE_OS"],
-				''//CO
-			];
-			template.push(rowToAdd);
-			//alert(JSON.stringify(rowToAdd));
-			
+			if(selectedSizetemp === "DUAL")
+			{
+				const rowToAdd = [
+					'FALSE', // added NewLine into the sheet
+					line.wareHouse,
+					line.destination,
+					selectedStyleData.styleNo,//line.CUSTSTYLE + '/' + line.CUSTSTYLEDESC.slice(0, 6),
+					new Date(line.requestDelDate),
+					new Date(line.requestDelDate),
+					new Date(line.requestDelDate), //FOB Date
+					new Date(line[ecvisionHeaderNames.NDCDATE]).toLocaleDateString(),
+					new Date(line.PCDDate), //PCDDate
+					line[ecvisionHeaderNames.MASTCOLORDESC],
+					line[ecvisionHeaderNames.VPONO],
+					line[ecvisionHeaderNames.CPO],
+					//FOB.FOB,
+					deliveryMethod,//'DeliveryMethod *'
+					parseFloat(line[ecvisionHeaderNames.MIDDLEMANCHARGES]) + parseFloat(line[ecvisionHeaderNames.FACTORYCOST]),
+					'Free On Board-FOB',//'DeliveryTerm *'
+					line.packMethod,
+					zft,
+					line[ecvisionHeaderNames.TOTALQTY],
+					line["SETSIZE_XXS"],
+					line["SETSIZE_XS"],
+					line["SETSIZE_SMALL"],
+					''//CO
+				];
+				template.push(rowToAdd);
+			}
+			else
+			{
+				const rowToAdd = [
+					'FALSE', // added NewLine into the sheet
+					line.wareHouse,
+					line.destination,
+					selectedStyleData.styleNo,//line.CUSTSTYLE + '/' + line.CUSTSTYLEDESC.slice(0, 6),
+					new Date(line.requestDelDate),
+					new Date(line.requestDelDate),
+					new Date(line.requestDelDate), //FOB Date
+					new Date(line[ecvisionHeaderNames.NDCDATE]).toLocaleDateString(),
+					new Date(line.PCDDate), //PCDDate
+					line[ecvisionHeaderNames.MASTCOLORDESC],
+					line[ecvisionHeaderNames.VPONO],
+					line[ecvisionHeaderNames.CPO],
+					//FOB.FOB,
+					deliveryMethod,//'DeliveryMethod *'
+					parseFloat(line[ecvisionHeaderNames.MIDDLEMANCHARGES]) + parseFloat(line[ecvisionHeaderNames.FACTORYCOST]),
+					'Free On Board-FOB',//'DeliveryTerm *'
+					line.packMethod,
+					zft,
+					line[ecvisionHeaderNames.TOTALQTY],
+					line["SETSIZE_XXS"],
+					line["SETSIZE_XS"],
+					line["SETSIZE_SMALL"],
+					line["SETSIZE_MED"],
+					line["SETSIZE_LARGE"],
+					line["SETSIZE_XL"],
+					line["SETSIZE_XXL"],
+					line["SETSIZE_XXXL"],
+					''//CO
+				];
+				template.push(rowToAdd);
+			} 
 		}
 
 		// Change sizes postfix according to Inseam
@@ -763,49 +1003,81 @@ const Step2Component = () => {
 			}
 		}
 		
-
-		const xxsIndex = template[14].findIndex(i => i === 'XXS');
-		if (xxsIndex > -1) template[14][xxsIndex] = 'XXS' + getinseamwithsize(selectedInseam);
-
-		const xsIndex = template[14].findIndex(i => i === 'XS');
-		if (xsIndex > -1) template[14][xsIndex] = 'XS' + getinseamwithsize(selectedInseam);
-
-		const sIndex = template[14].findIndex(i => i === 'S');
-		if (sIndex > -1) template[14][sIndex] = 'S' + getinseamwithsize(selectedInseam);
-
-		const mIndex = template[14].findIndex(i => i === 'M');
-		if (mIndex > -1) template[14][mIndex] = 'M' + getinseamwithsize(selectedInseam);
-
-		const lIndex = template[14].findIndex(i => i === 'L');
-		if (lIndex > -1) template[14][lIndex] = 'L' + getinseamwithsize(selectedInseam);
-
-		const xlIndex = template[14].findIndex(i => i === 'XL');
-		if (xlIndex > -1) template[14][xlIndex] = 'XL' + getinseamwithsize(selectedInseam);
-
-		const xxlIndex = template[14].findIndex(i => i === 'XXL');
-		if (xxlIndex > -1) template[14][xxlIndex] = 'XXL' + getinseamwithsize(selectedInseam);
-
-		const xs_s_Index = template[14].findIndex(i => i === 'XS/S');
-		if (xs_s_Index > -1) template[14][xs_s_Index] = 'XS/S' + getinseamwithsize(selectedInseam);
-
-		const m_l_Index = template[14].findIndex(i => i === 'M/L');
-		if (m_l_Index > -1) template[14][m_l_Index] = 'M/L' + getinseamwithsize(selectedInseam);
-
-		const xl_xxl_Index = template[14].findIndex(i => i === 'XL/XXL');
-		if (xl_xxl_Index > -1) template[14][xl_xxl_Index] = 'XL/XXL' + getinseamwithsize(selectedInseam);
-
-		const xs_xxl_s_Index = template[14].findIndex(i => i === 'XS-XXL.S');
-		if (xs_xxl_s_Index > -1) template[14][xs_xxl_s_Index] = 'XS-XXL.S' + getinseamwithsize(selectedInseam);
-
-		const xs_xxl_r_Index = template[14].findIndex(i => i === 'XS-XXL.R');
-		if (xs_xxl_r_Index > -1) template[14][xs_xxl_r_Index] = 'XS-XXL.R' + getinseamwithsize(selectedInseam);
-
-		const xs_xxl_l_Index = template[14].findIndex(i => i === 'XS-XXL.L');
-		if (xs_xxl_l_Index > -1) template[14][xs_xxl_l_Index] = 'XS-XXL.L' + getinseamwithsize(selectedInseam);
-
-		const os_Index = template[14].findIndex(i => i === 'OS');
-		if (os_Index > -1) template[14][os_Index] = 'OS' + getinseamwithsize(selectedInseam);
-
+		if(selectedSizetemp === "NORMAL")
+		{
+			template[14][18] = ' XXS';
+			template[14][19] = ' XS';
+			template[14][20] = ' SMALL';
+			template[14][21] = ' MED';
+			template[14][22] = ' LARGE';
+			template[14][23] = ' XL';
+			template[14][24] = ' XXL';
+			template[14][25] = ' XXXL';
+			template[14][26] = ' CO Number';
+		}
+		else if(selectedSizetemp === "REG")
+		{
+			template[14][18] = ' XXS.R';
+			template[14][19] = ' XS.R';
+			template[14][20] = ' SMALL.R';
+			template[14][21] = ' MED.R';
+			template[14][22] = ' LARGE.R';
+			template[14][23] = ' XL.R';
+			template[14][24] = ' XXL.R';
+			template[14][25] = ' XXXL.R';
+			template[14][26] = ' CO Number';
+		}
+		else if(selectedSizetemp === "LONG")
+		{
+			template[14][18] = ' XXS.L';
+			template[14][19] = ' XS.L';
+			template[14][20] = ' SMALL.L';
+			template[14][21] = ' MED.L';
+			template[14][22] = ' LARGE.L';
+			template[14][23] = ' XL.L';
+			template[14][24] = ' XXL.L';
+			template[14][25] = ' XXXL.L';
+			template[14][26] = ' CO Number';
+		}
+		else if(selectedSizetemp === "SHORT")
+		{
+			template[14][18] = ' XXS.S';
+			template[14][19] = ' XS.S';
+			template[14][20] = ' SMALL.S';
+			template[14][21] = ' MED.S';
+			template[14][22] = ' LARGE.S';
+			template[14][23] = ' XL.S';
+			template[14][24] = ' XXL.S';
+			template[14][25] = ' XXXL.S';
+			template[14][26] = ' CO Number';
+		}
+		else if(selectedSizetemp === "DUAL")
+		{
+			template[14][18] = ' XS/S';
+			template[14][19] = ' M/L';
+			template[14][20] = ' XLXXL';
+			template[14][21] = ' CO Number';
+			template[14][22] = '';
+			template[14][23] = '';
+			template[14][24] = '';
+			template[14][25] = '';
+			template[14][26] = '';
+		}
+		else
+		{
+			template[14][18] = '';
+			template[14][19] = '';
+			template[14][20] = '';
+			template[14][21] = '';
+			template[14][22] = '';
+			template[14][23] = '';
+			template[14][24] = '';
+			template[14][25] = '';
+			template[14][26] = '';
+		}
+		 
+		
+ 
 		//BOM removing colors not in CO and Thread lines & Dummy in PLM
 		const filteredBOM: any[] = pinkInputSheetContext.BOM.filter((row: any) => {
 			const prodGroup = row[1].toUpperCase().split('-');
@@ -844,22 +1116,23 @@ const Step2Component = () => {
 		//Co sheet
 		const ws = XLSX.utils.aoa_to_sheet(template);
 		ws['!cols'] = wscols;
-			
+	
 		//==== Input Sheet Validation ====//
 		//Check Style No Format
+		
         var cell_styleno = ws['B1'].v;
         if(cell_styleno !== "")
         {
           if(cell_styleno.length !== 8)
           {
             ws['B1'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-            //error_data.push({sheetname:sheetone_name, cellid:'B1', error:'Style No Length not equal to 8 characters.'});
+            error_data.push({sheetname:'CO Line', cellid:'B1', error:'Style No Length not equal to 8 characters.'});
           }
         }
         else
         {
           ws['B1'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B1', error:'Style No Can not be in blank.'});
+          error_data.push({sheetname:'CO Line', cellid:'B1', error:'Style No Can not be in blank.'});
         }
 
         //Check Version ID
@@ -867,7 +1140,7 @@ const Step2Component = () => {
         if(RegExp('^[0-9]*$').test(cell_versionid) === false)
         {
           ws['B2'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B2', error:'Only Numeric Version ID is allowed.'});
+          error_data.push({sheetname:'CO Line', cellid:'B2', error:'Only Numeric Version ID is allowed.'});
         }
 
         //Check Garment Item Desc
@@ -877,257 +1150,1167 @@ const Step2Component = () => {
           if(cell_itemdesc.length > 60)
           {
             ws['B3'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-            //error_data.push({sheetname:sheetone_name, cellid:'B3', error:'Garment Item Description Can not be greater than 8 characters.'});
+            error_data.push({sheetname:'CO Line', cellid:'B3', error:'Garment Item Description Can not be greater than 8 characters.'});
           }
         }
         else
         {
           ws['B3'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B3', error:'Garment Item Description Can not be in blank.'});
+          error_data.push({sheetname:'CO Line', cellid:'B3', error:'Garment Item Description Can not be in blank.'});
         }
 
         //Check Lead Factory
         var cell_leadfactory = ws['B4'].v;
         if(cell_leadfactory !== "")
         {
-          const buyercode = cell_leadfactory.split("-");
-		  	if(buyercode.includes("-"))
+          
+		  	if(cell_leadfactory.includes("-"))
 			{
+				const buyercode = cell_leadfactory.split("-");
 				if(buyercode[1].length !== 3)
 				{
 					ws['B4'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B4', error:'Lead Factory Code length must be 3 characters.'});
+					error_data.push({sheetname:'CO Line', cellid:'B4', error:'Lead Factory Code length must be 3 characters.'});
 				}
 			}
 			else
 			{
 				ws['B4'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:'B4', error:'Can not find Lead Factory Code.'});
 			}
           
         }
         else
         {
           ws['B4'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B4', error:'Lead Factory Can not be in blank.'});
+          error_data.push({sheetname:'CO Line', cellid:'B4', error:'Lead Factory Can not be in blank.'});
         }
 
         //Check Buyer
         var cell_buyer = ws['B5'].v;
         if(cell_buyer !== "")
         {
-          const buyercode = cell_buyer.split("-");
-		  	if(buyercode.includes("-"))
-		  	{
-				if(buyercode[1].length !== 10)
+          
+		  	if(cell_buyer.includes("-"))
+		  	{ 
+				const buyercode = cell_buyer.split("-");
+				if(buyercode[1].length > 10)
 				{
 					ws['B5'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B5', error:'Buyer code length must be 8 characters.'});
+					error_data.push({sheetname:'CO Line', cellid:'B5', error:'Buyer Code allow charactors below 10.'});
 				}
 			}
 			else
-			{
+			{ 
 				ws['B5'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:'B5', error:'Can not find Buyer code.'});
 			}
         }
         else
         {
           ws['B5'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B5', error:'Buyer Can not be in blank.'});
+          error_data.push({sheetname:'CO Line', cellid:'B5', error:'Buyer Can not be in blank.'});
         }
 
         //Check Buyer Division
         var cell_buyerdiv = ws['B6'].v;
         if(cell_buyerdiv !== "")
         {
-          const buyercode = cell_buyerdiv.split("-");
-		  	if(buyercode.includes("-"))
+          
+		  	if(cell_buyerdiv.includes("-"))
 			{
+				const buyercode = cell_buyerdiv.split("-");
 				if(buyercode[1].length > 3)
 				{
 					ws['B6'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B6', error:'Buyer Division code length must be 3 characters.'});
+					error_data.push({sheetname:'CO Line', cellid:'B6', error:'Buyer Division code length must be 3 characters.'});
 				}
 			}
 			else
 			{
 				ws['B6'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:'B6', error:'Can not Find Buyer Division code'});
 			}
           
         }
         else
         {
           ws['B6'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B6', error:'Buyer Division Can not be in blank.'});
+          error_data.push({sheetname:'CO Line', cellid:'B6', error:'Can not Find Buyer Division '});
         }
 
         //Check Season
         var cell_season = ws['B8'].v;
         if(cell_season !== "")
         {
-          const buyercode = cell_season.split("-");
-		  	if(buyercode.includes("-"))
+          
+		  	if(cell_season.includes("-"))
 			{
+				const buyercode = cell_season.split("-");
 				if(buyercode[1].length > 7)
 				{
 					ws['B8'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B8', error:'Season code length must be 7 characters.'});
+					error_data.push({sheetname:'CO Line', cellid:'B8', error:'Season code length must be 7 characters.'});
 				}
 			}
 			else
 			{
 				ws['B8'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:'B8', error:'Can not find Season code.'});
 			}
           
         }
         else
         {
           ws['B8'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B8', error:'Season Can not be in blank.'});
+          error_data.push({sheetname:'CO Line', cellid:'B8', error:'Season Can not be in blank.'});
         }
 
         //Check Product Group
         var cell_productgroup = ws['B9'].v;
         if(cell_productgroup !== "")
         {
-          const buyercode = cell_productgroup.split("-");
+          
 		  
-		  	if(buyercode.includes("-"))
+		  	if(cell_productgroup.includes("-"))
 			{
+				const buyercode = cell_productgroup.split("-");
 				if(buyercode[1].length > 5)
 				{
 					ws['B9'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B9', error:'Product Group code length must be 5 characters.'});
+					error_data.push({sheetname:'CO Line', cellid:'B9', error:'Product Group code length must be 5 characters.'});
 				}
 			}
 			else
 			{
 				ws['B9'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:'B9', error:'Can not find Product Group code'});
 			}
           
         }
         else
         {
           ws['B9'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B9', error:'Product Group Can not be in blank.'});
+          error_data.push({sheetname:'CO Line', cellid:'B9', error:'Product Group Can not be in blank.'});
         }
 
         //Check Merchandiser
         var cell_merchant = ws['B10'].v;
         if(cell_merchant !== "")
         {
-          const buyercode = cell_merchant.split("-");
-		  	if(buyercode.includes("-"))
+          
+		  	if(cell_merchant.includes("-"))
 			{
+				const buyercode = cell_merchant.split("-");
 				if(buyercode[1].length > 10)
 				{
 					ws['B10'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B10', error:'Merchandiser code length must be 10 characters.'});
+					error_data.push({sheetname:'CO Line', cellid:'B10', error:'Merchandiser code length must be 10 characters.'});
 				}
 			}
 			else
 			{
 				ws['B10'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:'B10', error:'Can not find Merchandiser code.'});
 			}
           
         }
         else
         {
           ws['B10'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B10', error:'Merchandiser Can not be in blank.'});
+          error_data.push({sheetname:'CO Line', cellid:'B10', error:'Can not find Merchandiser Can not be in blank.'});
         }
 
         //Check Planner
         var cell_planner = ws['B11'].v;
         if(cell_planner !== "")
         {
-          const buyercode = cell_planner.split("-");
-		  	if(buyercode.includes("-"))
+          
+		  	if(cell_planner.includes("-"))
 			{
+				const buyercode = cell_planner.split("-");
 				if(buyercode[1].length > 10)
 				{
 					ws['B11'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B11', error:'Planner code length must be 10 characters.'});
+					error_data.push({sheetname:'CO Line', cellid:'B11', error:'Planner code length must be 10 characters.'});
 				}
 			}
 			else
 			{
 				ws['B11'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:'B11', error:'Can not find Planner code.'});
 			}
           
         }
         else
         {
           ws['B11'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B11', error:'Planner Can not be in blank.'});
+          error_data.push({sheetname:'CO Line', cellid:'B11', error:'Planner Can not be in blank.'});
         }
 
         //Check Fabric Composition
         var cell_fabriccomp = ws['B12'].v;
         if(cell_fabriccomp !== "")
         {
-          const buyercode = cell_fabriccomp.split("-");
-		  	if(buyercode.includes("-"))
+          
+		  	if(cell_fabriccomp.includes("-"))
 			{
+				const buyercode = cell_fabriccomp.split("-");
 				if(buyercode[1].length > 10)
 				{
 					ws['B12'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B12', error:'Fabric Composition code length must be 10 characters.'});
+					error_data.push({sheetname:'CO Line', cellid:'B12', error:'Fabric Composition code length must be 10 characters.'});
 				}
 			}
 			else
 			{
 				ws['B12'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:'B12', error:'Can Not find Fabric Composition code.'});
 			}
           
         }
         else
         {
           ws['B12'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B12', error:'Fabric Composition Can not be in blank.'});
+          error_data.push({sheetname:'CO Line', cellid:'B12', error:'Fabric Composition Can not be in blank.'});
         }
 
         //Check Style Categorization
         var cell_stylecat = ws['B13'].v;
         if(cell_stylecat !== "")
         {
-          	const buyercode = cell_stylecat.split("-");
-		  	if(buyercode.includes("-"))
+          	
+		  	if(cell_stylecat.includes("-"))
 			{
+				const buyercode = cell_stylecat.split("-");
 				if(buyercode[1].length !== 1)
 				{
 					ws['B13'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B13', error:'Style Categorization Letter length must be 1 character.'});
+					error_data.push({sheetname:'CO Line', cellid:'B13', error:'Style Categorization Letter length must be 1 character.'});
 				}
 				else
 				{
 					if(buyercode[1].match(/^[A-Z]*$/) === false)
 					{
-					ws['B13'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-					//error_data.push({sheetname:sheetone_name, cellid:'B13', error:'Style Categorization Letter Need to change as Capital Letter.'});
+						ws['B13'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+						error_data.push({sheetname:'CO Line', cellid:'B13', error:'Style Categorization Letter Need to change as Capital Letter.'});
 					}
 				}
 			}
 			else
 			{
 				ws['B13'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:'B13', error:'Can Not find Style Categorization.'});
 			}
           
         }
         else
         {
           ws['B13'].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
-          //error_data.push({sheetname:sheetone_name, cellid:'B13', error:'Style Categorization Can not be in blank.'});
+          error_data.push({sheetname:'CO Line', cellid:'B13', error:'Style Categorization Can not be in blank.'});
         }
 
-			XLSX.utils.book_append_sheet(wb, ws, 'CO LINE');// changed StNDdize CO to CO Line 
+		//Check Co line validation
+		for (let i = 1; i <= selectedStyleData.newLines.length; i++) 
+		{
+			var val_row_inc = 15 + i;
+
+			//Validate Production Warehouse
+
+			var cell_address_B = 'B'+val_row_inc;
+			var cell_ProductionWarehouse = ws[cell_address_B].v; 
+
+			if(cell_ProductionWarehouse === "")
+			{
+				ws[cell_address_B].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:cell_address_B, error:'ProductionWarehouse Can not be in blank.'});
+			}
+			else
+			{
+				if(cell_ProductionWarehouse.includes("-"))
+				{
+					const cell_split_ProductionWarehouse = cell_ProductionWarehouse.split("-");
+
+					if(cell_split_ProductionWarehouse[cell_split_ProductionWarehouse.length - 1].length !== 3)
+					{
+						ws[cell_address_B].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+						error_data.push({sheetname:'CO Line', cellid:cell_address_B, error:'ProductionWarehouse Code length must be 3 characters.'});
+					}
+				}
+				else
+				{
+					ws[cell_address_B].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'CO Line', cellid:cell_address_B, error:'ProductionWarehouse Code cannot identified.'});
+				}
+			}
+
+			//Validate Destination
+
+			var cell_address_C = 'C'+val_row_inc;
+			var cell_Destination = ws[cell_address_C].v; 
+
+			if(cell_Destination === "")
+			{
+				ws[cell_address_C].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:cell_address_C, error:'Destination Can not be in blank.'});
+			}
+			else
+			{
+				if(cell_Destination.includes("-"))
+				{
+					const cell_split_Destination = cell_Destination.split("-");
+
+					if(cell_split_Destination[1].length < 5)
+					{
+						ws[cell_address_C].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+						error_data.push({sheetname:'CO Line', cellid:cell_address_C, error:'Destination Code length include minimum 5 characters.'});
+					}
+				}
+				else
+				{
+					ws[cell_address_C].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'CO Line', cellid:cell_address_C, error:'Destination Code cannot identified.'});
+				}
+			}
+
+			//Validate Customer Style No
+
+			var cell_address_D = 'D'+val_row_inc;
+			var cell_CustomerStyleNo = ws[cell_address_D].v; 
+
+			if(cell_CustomerStyleNo === "")
+			{
+				ws[cell_address_D].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:cell_address_D, error:'CustomerStyleNo Can not be in blank.'});
+			}
+			else
+			{
+				if(cell_CustomerStyleNo.length > 30)
+				{
+					ws[cell_address_D].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'CO Line', cellid:cell_address_D, error:'CustomerStyleNo max character length is 30.'});
+				}
+				else
+				{
+					if(!cell_CustomerStyleNo.includes("-"))
+					{
+						ws[cell_address_D].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+						error_data.push({sheetname:'CO Line', cellid:cell_address_D, error:'FR Match code can not find in CustomerStyleNo.'});
+					}
+				}
+			}
+
+			//Validate Requested Delivery Date Customer
+
+			var cell_address_E = 'E'+val_row_inc;
+			var cell_RequestedDeliveryDateCustomer = ws[cell_address_E].v; 
+
+			if(cell_RequestedDeliveryDateCustomer === "")
+			{
+				ws[cell_address_E].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:cell_address_E, error:'RequestedDeliveryDateCustomer Can not be in blank.'});
+			}
+			
+			if(moment(cell_RequestedDeliveryDateCustomer, "DD-MM-YYYY", true).isValid() === false)
+			{
+				ws[cell_address_E].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:cell_address_E, error:'RequestedDeliveryDateCustomer Invalid Date.'});
+			}
+
+			//Validate Requested Delivery Date Planner 
+
+			var cell_address_F = 'F'+val_row_inc;
+			var cell_RequestedDeliveryDatePlanner = ws[cell_address_F].v; 
+
+			if(cell_RequestedDeliveryDatePlanner === "")
+			{
+				ws[cell_address_F].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:cell_address_F, error:'RequestedDeliveryDatePlanner Can not be in blank.'});
+			}
+			
+			if(moment(cell_RequestedDeliveryDatePlanner, "DD-MM-YYYY", true).isValid() === false)
+			{
+				ws[cell_address_F].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:cell_address_F, error:'RequestedDeliveryDatePlanner Invalid Date.'});
+			}
+
+			//Validate FOBDate
+
+			var cell_address_G = 'G'+val_row_inc;
+			var cell_FOBDate = ws[cell_address_G].v; 
+
+			if(cell_FOBDate !== "" && moment(cell_FOBDate, "DD-MM-YYYY", true).isValid() === false)
+			{
+				ws[cell_address_G].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:cell_address_G, error:'FOBDate Invalid Date.'});
+			}
+
+			//Validate NDCDate
+
+			var cell_address_H = 'H'+val_row_inc;
+			var cell_NDCDate = ws[cell_address_H].v; 
+
+			if(cell_NDCDate !== "" && moment(cell_NDCDate, "DD-MM-YYYY", true).isValid() === false)
+			{
+				ws[cell_address_H].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:cell_address_H, error:'NDCDate Invalid Date.'});
+			}
+
+			//Validate PCDDate
+
+			var cell_address_I = 'I'+val_row_inc;
+			var cell_PCDDate = ws[cell_address_I].v; 
+
+			if(cell_PCDDate !== "" && moment(cell_PCDDate, "DD-MM-YYYY", true).isValid() === false)
+			{
+				ws[cell_address_I].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:cell_address_I, error:'PCDDate Invalid Date.'});
+			}
+
+			//Validate Color
+
+			var cell_address_J = 'J'+val_row_inc;
+			var cell_Color = ws[cell_address_J].v; 
+
+			if(cell_Color === "")
+			{
+				ws[cell_address_J].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:cell_address_J, error:'Color Can not be in blank.'});
+			}
+			else
+			{
+				if(cell_Color.length > 60)
+				{
+					ws[cell_address_J].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'CO Line', cellid:cell_address_J, error:'Color max character length is 60.'});
+				}
+			}
+
+			//Validate VPONo
+
+			var cell_address_K = 'K'+val_row_inc;
+			var cell_VPONo = ws[cell_address_K].v; 
+
+			if(cell_VPONo === "")
+			{
+				ws[cell_address_K].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:cell_address_K, error:'VPONo Can not be in blank.'});
+			}
+
+			//Validate CPONo
+
+			var cell_address_L = 'L'+val_row_inc;
+			var cell_CPONo = ws[cell_address_L].v; 
+
+			if(cell_CPONo === "")
+			{
+				ws[cell_address_L].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:cell_address_L, error:'CPONo Can not be in blank.'});
+			}
+
+			//Validate DeliveryMethod
+
+			var cell_address_M = 'M'+val_row_inc;
+			var cell_DeliveryMethod = ws[cell_address_M].v; 
+
+			if(cell_DeliveryMethod === "")
+			{
+				ws[cell_address_M].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:cell_address_M, error:'DeliveryMethod Can not be in blank.'});
+			}
+			else
+			{
+				if(cell_DeliveryMethod.includes("-"))
+				{
+					const cell_split_DeliveryMethod = cell_DeliveryMethod.split("-");
+
+					if(cell_split_DeliveryMethod[1].length !== 3)
+					{
+						ws[cell_address_M].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+						error_data.push({sheetname:'CO Line', cellid:cell_address_M, error:'DeliveryMethod Code length is 3 characters.'});
+					}
+				}
+				else
+				{
+					ws[cell_address_M].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'CO Line', cellid:cell_address_M, error:'DeliveryMethod Code can not identified.'});
+				}
+			}
+
+			//Validate SalesPrice
+
+			var cell_address_N = 'N'+val_row_inc;
+			var cell_SalesPrice = ws[cell_address_N].v; 
+
+			if(cell_SalesPrice === "")
+			{
+				ws[cell_address_N].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:cell_address_N, error:'SalesPrice Can not be in blank.'});
+			}
+			else
+			{
+				if(cell_SalesPrice.toString().includes("."))
+				{
+					//const cell_split_SalesPrice = cell_SalesPrice.toString().split(".");
+					
+					//if(cell_split_SalesPrice[1].length !== 2)
+					//{
+						
+						//ws[cell_address_N].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+						//error_data.push({sheetname:'CO Line', cellid:cell_address_N, error:'SalesPrice need two decimal palces.'});
+					//}
+				}
+			}
+
+			//Validate DeliveryTerm
+
+			var cell_address_O = 'O'+val_row_inc;
+			var cell_DeliveryTerm = ws[cell_address_O].v; 
+
+			if(cell_DeliveryTerm === "")
+			{
+				ws[cell_address_O].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:cell_address_O, error:'DeliveryTerm Can not be in blank.'});
+			}
+			else
+			{
+				if(cell_DeliveryTerm.includes("-"))
+				{
+					const cell_split_DeliveryTerm = cell_DeliveryTerm.split("-");
+
+					if(cell_split_DeliveryTerm[1].length !== 3)
+					{
+						ws[cell_address_O].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+						error_data.push({sheetname:'CO Line', cellid:cell_address_O, error:'DeliveryTerm Code length is 3 characters.'});
+					}
+				}
+				else
+				{
+					ws[cell_address_O].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'CO Line', cellid:cell_address_O, error:'DeliveryTerm Code can not identified.'});
+				}
+			}
+
+			//Validate PackMethod
+
+			var cell_address_P = 'P'+val_row_inc;
+			var cell_PackMethod = ws[cell_address_P].v; 
+
+			if(cell_PackMethod === "")
+			{
+				ws[cell_address_P].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:cell_address_P, error:'PackMethod Can not be in blank.'});
+			}
+			else
+			{
+				if(cell_PackMethod.includes("-"))
+				{
+					const cell_split_PackMethod = cell_PackMethod.split("-");
+
+					if(cell_split_PackMethod[1].length !== 3)
+					{
+						ws[cell_address_P].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+						error_data.push({sheetname:'CO Line', cellid:cell_address_P, error:'PackMethod Code length is 3 characters.'});
+					}
+				}
+				else
+				{
+					ws[cell_address_P].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'CO Line', cellid:cell_address_P, error:'PackMethod Code can not identified.'});
+				}
+			}
+
+			//Validate ZOption
+
+			var cell_address_Q = 'Q'+val_row_inc;
+			var cell_ZOption = ws[cell_address_Q].v; 
+
+			if(cell_ZOption === "")
+			{
+				ws[cell_address_Q].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'CO Line', cellid:cell_address_Q, error:'ZOption Can not be in blank.'});
+			}
+			else
+			{
+				if(cell_ZOption.includes("-"))
+				{
+					const cell_split_ZOption = cell_ZOption.split("-");
+
+					if(cell_split_ZOption[0].length > 15)
+					{
+						ws[cell_address_Q].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+						error_data.push({sheetname:'CO Line', cellid:cell_address_Q, error:'ZOption Description maximum length is 15 characters.'});
+					}
+				}
+				else
+				{
+					ws[cell_address_Q].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'CO Line', cellid:cell_address_Q, error:'ZOption Code can not identified.'});
+				}
+			}
+ 
+		}
+		
+		XLSX.utils.book_append_sheet(wb, ws, 'CO LINE');// changed StNDdize CO to CO Line 
 
  
 		for (var i = 0; i < 14; i++) {
 			filteredBOM.unshift(['']);
 		} 
 
+		
 		//BOM sheet
 		const ws2 = XLSX.utils.aoa_to_sheet(filteredBOM);
+
+		///Bom Line Validation///
+		//Check Co line mandatory fields are blank
+		
+		for (let i = 16; i <= filteredBOM.length; i++) 
+		{
+			var val_rowbom_inc = i;
+
+			// Bom Category
+			var cell_addressbom_B = 'B'+val_rowbom_inc;
+			var cell_BOMCategory = ws2[cell_addressbom_B].v; 
+
+			if(cell_BOMCategory === "")
+			{
+				ws2[cell_addressbom_B].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_B, error:'BOMCategory can not be blank.'});
+			}
+			else
+			{
+				if(cell_BOMCategory.includes("-"))
+				{
+					const cell_split_BOMCategory = cell_BOMCategory.split("-");
+
+					if(cell_split_BOMCategory[cell_split_BOMCategory.length - 1].length !== 1)
+					{
+						ws2[cell_addressbom_B].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+						error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_B, error:'BOMCategory Code for one digit.'});
+					}
+				}
+				else
+				{
+					ws2[cell_addressbom_B].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_B, error:'BOMCategory Code can not be identified.'});
+				}
+			}
+
+			// RMProcurementGroup
+			var cell_addressbom_C = 'C'+val_rowbom_inc;
+			var cell_RMProcurementGroup = ws2[cell_addressbom_C].v; 
+
+			if(cell_RMProcurementGroup === "")
+			{
+				ws2[cell_addressbom_C].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_C, error:'RMProcurementGroup can not be blank.'});
+			}
+			else
+			{
+				if(cell_RMProcurementGroup.includes("-"))
+				{
+					const cell_split_RMProcurementGroup = cell_RMProcurementGroup.split("-");
+
+					if(cell_split_RMProcurementGroup[cell_split_RMProcurementGroup.length - 1].length !== 3)
+					{
+						ws2[cell_addressbom_C].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+						error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_C, error:'RMProcurementGroup Code for 3 digits.'});
+					}
+				}
+				else
+				{
+					ws2[cell_addressbom_C].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_C, error:'RMProcurementGroup Code can not be identified.'});
+				}
+			}
+
+			// M3Item Code
+			var cell_addressbom_D = 'D'+val_rowbom_inc;
+			var cell_M3ItemCode = ws2[cell_addressbom_D].v; 
+
+			if(cell_M3ItemCode === "")
+			{
+				ws2[cell_addressbom_D].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_D, error:'M3Item Code can not be blank.'});
+			}
+			else
+			{
+				if(cell_M3ItemCode.length > 12)
+				{
+					ws2[cell_addressbom_D].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_D, error:'M3Item Code max length 12 digits.'});
+				}
+			}
+
+			// HierarchyLevel1
+			var cell_addressbom_E = 'E'+val_rowbom_inc;
+			var cell_HierarchyLevel1 = ws2[cell_addressbom_E].v; 
+
+			if(cell_HierarchyLevel1 === "")
+			{
+				ws2[cell_addressbom_E].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_E, error:'HierarchyLevel1 can not be blank.'});
+			}
+			else
+			{
+				if(!cell_HierarchyLevel1.includes("-"))
+				{
+					ws2[cell_addressbom_E].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_E, error:'HierarchyLevel1 Code can not be identified.'});
+					
+				}
+			}
+
+			//  HierarchyLevel2
+			var cell_addressbom_F = 'F'+val_rowbom_inc;
+			var cell_HierarchyLevel2 = ws2[cell_addressbom_F].v; 
+
+			if(cell_HierarchyLevel2 === "")
+			{
+				ws2[cell_addressbom_F].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_F, error:'HierarchyLevel2 can not be blank.'});
+			}
+			else
+			{
+				if(!cell_HierarchyLevel2.includes("-"))
+				{
+					ws2[cell_addressbom_F].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_F, error:'HierarchyLevel2 Code can not be identified.'});
+					
+				}
+			}
+
+			//  HierarchyLevel3
+			var cell_addressbom_G = 'G'+val_rowbom_inc;
+			var cell_HierarchyLevel3 = ws2[cell_addressbom_G].v; 
+
+			if(cell_HierarchyLevel3 !== "")
+			{
+				if(!cell_HierarchyLevel3.includes("-"))
+				{
+					ws2[cell_addressbom_G].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_G, error:'HierarchyLevel3 Code can not be identified.'});
+					
+				}
+			}
+
+			//  HierarchyLevel4
+			var cell_addressbom_H = 'H'+val_rowbom_inc;
+			var cell_HierarchyLevel4 = ws2[cell_addressbom_H].v; 
+
+			if(cell_HierarchyLevel4 !== "")
+			{
+				if(!cell_HierarchyLevel4.includes("-"))
+				{
+					ws2[cell_addressbom_H].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_H, error:'HierarchyLevel4 Code can not be identified.'});
+					
+				}
+			}
+
+			//  HierarchyLevel5
+			var cell_addressbom_I = 'I'+val_rowbom_inc;
+			var cell_HierarchyLevel5 = ws2[cell_addressbom_I].v; 
+
+			if(cell_HierarchyLevel5 !== "")
+			{
+				if(!cell_HierarchyLevel5.includes("-"))
+				{
+					ws2[cell_addressbom_I].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_I, error:'HierarchyLevel5 Code can not be identified.'});
+					
+				}
+			}
+
+			//  RM Width
+			var cell_addressbom_J = 'J'+val_rowbom_inc;
+			var cell_RMWidth = ws2[cell_addressbom_J].v; 
+
+			if(cell_RMWidth === "")
+			{
+				ws2[cell_addressbom_J].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_J, error:'RM Width Code can not be blank.'});
+			}
+
+			// SupplierItemNo
+			var cell_addressbom_K = 'K'+val_rowbom_inc;
+			var cell_SupplierItemNo = ws2[cell_addressbom_K].v; 
+
+			if(cell_SupplierItemNo === "")
+			{
+				ws2[cell_addressbom_K].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_K, error:'SupplierItemNo can not be blank.'});
+			}
+			else
+			{
+				if(cell_SupplierItemNo.length > 30)
+				{
+					ws2[cell_addressbom_K].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_K, error:'SupplierItemNo max character length is 30.'});
+				}
+			}
+
+
+			// Comment
+			var cell_addressbom_L = 'L'+val_rowbom_inc;
+			var cell_Comment = ws2[cell_addressbom_L].v; 
+
+			if(cell_Comment !== "")
+			{
+				if(cell_Comment.length !== 3)
+				{
+					ws2[cell_addressbom_L].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_L, error:'Comment character length is 3.'});
+				}
+				
+			}
+
+			// Item Name
+			var cell_addressbom_M = 'M'+val_rowbom_inc;
+			var cell_ItemName = ws2[cell_addressbom_M].v; 
+
+			if(cell_ItemName === "")
+			{
+				ws2[cell_addressbom_M].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_M, error:'ItemName can not be blank.'});
+			}
+			else
+			{
+				if(cell_ItemName.length > 30)
+				{
+					ws2[cell_addressbom_M].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_M, error:'ItemName character max length is 30.'});
+				}
+			}
+
+			// Item Description
+			var cell_addressbom_N = 'N'+val_rowbom_inc;
+			var cell_ItemDescription = ws2[cell_addressbom_N].v; 
+
+			if(cell_ItemDescription === "")
+			{
+				ws2[cell_addressbom_N].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_N, error:'ItemDescription can not be blank.'});
+			}
+			else
+			{
+				if(cell_ItemDescription.length > 60)
+				{
+					ws2[cell_addressbom_N].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_N, error:'ItemDescription character max length is 60.'});
+				}
+			}
+
+			// Brand Category
+			var cell_addressbom_O = 'O'+val_rowbom_inc;
+			var cell_BrandCategory = ws2[cell_addressbom_O].v; 
+
+			if(cell_BrandCategory === "")
+			{
+				ws2[cell_addressbom_O].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_O, error:'BrandCategory can not be blank.'});
+			}
+
+			// GMTColor
+			var cell_addressbom_P = 'P'+val_rowbom_inc;
+			var cell_GMTColor : any = ws2[cell_addressbom_P].v; 
+
+			if(cell_GMTColor === "")
+			{
+				ws2[cell_addressbom_P].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_P, error:'GMTColor can not be blank.'});
+			}
+			else
+			{
+				const colormatch = selectedStyleData.newLines.filter((obj,resq) => { return obj.MASTCOLORDESC === resq; });
+				
+				if(colormatch.length === 0)
+				{
+					ws2[cell_addressbom_P].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_P, error:'GMTColor Not in CO Lines.'});
+				}
+
+				if(!cell_GMTColor.includes("-"))
+				{
+					ws2[cell_addressbom_P].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_P, error:'GMTColor Code can not be identified.'});
+					
+				}
+			}
+
+			// GMTZOption
+			var cell_addressbom_Q = 'Q'+val_rowbom_inc;
+			var cell_GMTZOption = ws2[cell_addressbom_Q].v; 
+
+			if(cell_GMTZOption === "")
+			{
+				ws2[cell_addressbom_Q].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_Q, error:'GMTZOption can not be blank.'});
+			}
+			else
+			{
+				if(!cell_GMTZOption.includes("-"))
+				{
+					ws2[cell_addressbom_Q].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_Q, error:'GMTZOption Code can not be identified.'});
+					
+				}
+			}
+
+			// GMTSize
+			var cell_addressbom_R = 'R'+val_rowbom_inc;
+			var cell_GMTSize = ws2[cell_addressbom_R].v; 
+
+			if(cell_GMTSize === "")
+			{
+				ws2[cell_addressbom_R].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_R, error:'GMTSize can not be blank.'});
+			}
+			else
+			{
+				if(!cell_GMTSize.includes("-"))
+				{
+					ws2[cell_addressbom_R].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_R, error:'GMTSize Code can not be identified.'});
+					
+				}
+			}
+
+			// RMZOption
+			var cell_addressbom_S = 'S'+val_rowbom_inc;
+			var cell_RMZOption = ws2[cell_addressbom_S].v; 
+
+			if(cell_RMZOption !== "")
+			{
+				if(!cell_RMZOption.includes("-"))
+				{
+					ws2[cell_addressbom_S].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_S, error:'RMZOption Code can not be identified.'});
+					
+				}
+			}
+
+			// RMColor
+			var cell_addressbom_T = 'T'+val_rowbom_inc;
+			var cell_RMColor = ws2[cell_addressbom_T].v; 
+
+			if(cell_RMColor !== "")
+			{
+				if(!cell_RMColor.includes("-"))
+				{
+					ws2[cell_addressbom_T].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_T, error:'RMColor Code can not be identified.'});
+					
+				}
+			}
+
+			// YY
+			var cell_addressbom_V = 'V'+val_rowbom_inc;
+			var cell_YY = ws2[cell_addressbom_V].v; 
+
+			if(cell_YY === "")
+			{
+				ws2[cell_addressbom_V].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_V, error:'YY can not be blank.'});
+			}
+			else if(cell_YY !== 0 || cell_YY !== "0")
+			{
+				
+				if(JSON.stringify(cell_YY).includes("."))
+				{
+					const cell_split_YY = JSON.stringify(cell_YY).split(".");
+
+					if(cell_split_YY[cell_split_YY.length - 1].length > 6)
+					{
+						ws2[cell_addressbom_V].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+						error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_V, error:'YY allow only 6 decimal places.'});
+					}
+				}
+			}
+
+			// Wastage
+			var cell_addressbom_W = 'W'+val_rowbom_inc;
+			var cell_Wastage = ws2[cell_addressbom_W].v; 
+
+			if(cell_Wastage === "")
+			{
+				ws2[cell_addressbom_W].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_W, error:'Wastage can not be blank.'});
+			}
+			else if(cell_YY !== 0 || cell_YY !== "0")
+			{
+				if(JSON.stringify(cell_Wastage).includes("."))
+				{
+					const cell_split_Wastage = JSON.stringify(cell_Wastage).split(".");
+
+					if(cell_split_Wastage[cell_split_Wastage.length - 1].length !== 2)
+					{
+						ws2[cell_addressbom_W].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+						error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_W, error:'Wastage allow only 2 decimal places.'});
+					}
+				}
+			}
+
+			// SupplierNominationStatus
+			var cell_addressbom_X = 'X'+val_rowbom_inc;
+			var cell_SupplierNominationStatus = ws2[cell_addressbom_X].v; 
+
+			if(cell_SupplierNominationStatus === "")
+			{
+				ws2[cell_addressbom_X].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_X, error:'SupplierNominationStatus can not be blank.'});
+			}
+
+			// SKUUOM
+			var cell_addressbom_Y = 'Y'+val_rowbom_inc;
+			var cell_SKUUOM = ws2[cell_addressbom_Y].v; 
+
+			if(cell_SKUUOM === "")
+			{
+				ws2[cell_addressbom_Y].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_Y, error:'SKUUOM can not be blank.'});
+			}
+			else
+			{
+				if(!cell_SKUUOM.includes("-"))
+				{
+					ws2[cell_addressbom_Y].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_Y, error:'SKUUOM Code cannot be identified'});
+				}
+			}
+
+			// PurchaseUOM
+			var cell_addressbom_Z = 'Z'+val_rowbom_inc;
+			var cell_PurchaseUOM = ws2[cell_addressbom_Z].v; 
+
+			if(cell_PurchaseUOM === "")
+			{
+				ws2[cell_addressbom_Z].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_Z, error:'PurchaseUOM can not be blank.'});
+			}
+			else
+			{
+				if(!cell_SKUUOM.includes("-"))
+				{
+					ws2[cell_addressbom_Z].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_Z, error:'PurchaseUOM Code cannot be identified'});
+				}
+			}
+
+			// PurchasePrice
+			var cell_addressbom_AB = "AB"+val_rowbom_inc;
+			var cell_PurchasePrice = ws2[cell_addressbom_AB].v; 
+
+			if(cell_PurchasePrice === "")
+			{
+				ws2[cell_addressbom_AB].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_AB, error:'PurchasePrice can not be blank.'});
+			}
+			else
+			{
+				if(JSON.stringify(cell_PurchasePrice).includes("."))
+				{
+					const cell_split_PurchasePrice = JSON.stringify(cell_PurchasePrice).split(".");
+
+					if(cell_split_PurchasePrice[cell_split_PurchasePrice.length - 1].length > 4)
+					{
+						ws2[cell_addressbom_AB].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+						error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_AB, error:'PurchasePrice allow only 4 decimal places.'});
+					}
+				}
+			}
+
+			// SupplierTolarance
+			var cell_addressbom_AH = "AH"+val_rowbom_inc;
+			var cell_SupplierTolarance = ws2[cell_addressbom_AH].v; 
+
+			if(cell_SupplierTolarance === "")
+			{
+				ws2[cell_addressbom_AH].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_AH, error:'SupplierTolarance can not be blank.'});
+			}
+
+			// Supplier
+			var cell_addressbom_AI = "AI"+val_rowbom_inc;
+			var cell_Supplier = ws2[cell_addressbom_AI].v; 
+
+			if(cell_Supplier === "")
+			{
+				ws2[cell_addressbom_AI].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_AI, error:'Supplier can not be blank.'});
+			}
+			else
+			{
+				if(!cell_Supplier.includes("-"))
+				{
+					ws2[cell_addressbom_AI].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_AI, error:'Supplier Code cannot be identified'});
+				}
+			}
+
+			// ManLeadTime
+			var cell_addressbom_AJ = "AJ"+val_rowbom_inc;
+			var cell_ManLeadTime = ws2[cell_addressbom_AJ].v; 
+
+			if(cell_ManLeadTime === "")
+			{
+				ws2[cell_addressbom_AJ].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_AJ, error:'ManLeadTime can not be blank.'});
+			}
+
+			// ModeOfShipment
+			var cell_addressbom_Ak = "AK"+val_rowbom_inc;
+			if(ws2[cell_addressbom_Ak] !== undefined)
+			{
+				
+				var cell_ModeOfShipment = ws2[cell_addressbom_Ak].v;
+
+				if(cell_ModeOfShipment === "")
+				{
+					ws2[cell_addressbom_Ak].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_Ak, error:'ModeOfShipment can not be blank.'});
+				}
+			}
+			else
+			{
+				ws2[cell_addressbom_Ak] = { t: 'stub', v: '' };
+				ws2[cell_addressbom_Ak].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_Ak, error:'ModeOfShipment can not be blank.'});
+			}
+			
+
+			// RMDeliveryTerm
+			var cell_addressbom_AL = "AL"+val_rowbom_inc;
+			var cell_RMDeliveryTerm = ws2[cell_addressbom_AL].v; 
+
+			if(cell_RMDeliveryTerm === "")
+			{
+				ws2[cell_addressbom_AL].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_AL, error:'RMDeliveryTerm can not be blank.'});
+			}
+			else
+			{
+				if(!cell_RMDeliveryTerm.includes("-"))
+				{
+					ws2[cell_addressbom_AL].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+					error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_AL, error:'RMDeliveryTerm Code cannot be identified'});
+				}
+			}
+ 
+			// SourcingMerchant
+			var cell_addressbom_AM = "AM"+val_rowbom_inc;
+			var cell_SourcingMerchant = ws2[cell_addressbom_AM].v; 
+
+			if(cell_SourcingMerchant === "")
+			{
+				ws2[cell_addressbom_AM].s = {fill: {patternType:"solid",fgColor:{ rgb: "FF0000" }},};
+				error_data.push({sheetname:'BOM Line', cellid:cell_addressbom_AM, error:'SourcingMerchant can not be blank.'});
+			}
+ 
+		}
+
+		
 		XLSX.utils.book_append_sheet(wb, ws2, 'BOM LINE');// changed StNDdize BOM to BOM LINE 
 
 		//Ops Track sheet
@@ -1136,9 +2319,20 @@ const Step2Component = () => {
 		OpsTrackSheetFormat(ws3, opsToTrackData);
 
 		XLSX.writeFile(wb, 'VS Sleep Input Sheet.xlsx'); //PINk to VS Sleep
+
+		setERRORLIST(error_data);
 	
 		selectedStyleData.newLines = upOLRDATASET.newLines;
 	
+	};
+
+	const onErrorListDownload = async () =>
+	{
+		var data_sheet = JSON.stringify(ERRORLIST);
+		const wb = XLSX.utils.book_new();
+		const ws = XLSX.utils.json_to_sheet(JSON.parse(data_sheet));
+		XLSX.utils.book_append_sheet(wb, ws, 'ERROR LIST');
+		XLSX.writeFile(wb, 'Inputsheet_Validation_Error_List.xlsx');
 	};
 
 	//On Thread sheet upload
@@ -1206,14 +2400,30 @@ const Step2Component = () => {
 	return (
 		<React.Fragment>
 			<Grid container direction='row' justify='space-evenly'>
-				<Grid item xs={6} style={{ marginTop: '0.5rem' }}>
-					<label
+				<Grid item xs={2} md={2} style={{ paddingLeft: '0.2rem', paddingTop: '0.2rem' }}>
+					<DropDownComponent
+						selectedField={selectedSizetemp}
+						data={[
+							{ id: 'NORMAL', name: 'NORMAL' },
+							{ id: 'REG', name: 'REG' },
+							{ id: 'LONG', name: 'LONG' },
+							{ id: 'SHORT', name: 'SHORT' },
+							{ id: 'DUAL', name: 'DUAL' },
+						]}
+						onSelectChange={changeSizetemp}
+						fieldName='Size Template'
+						size={"small"}
+					/>
+				</Grid>
+				<Grid item xs={2} md={2} style={{ paddingLeft: '0.2rem', paddingTop: '0.2rem' }}>
+				<label
 						className='form-control'
 						style={{
-							width: '20vw',
+							width: '100%',
 							textOverflow: 'ellipsis',
 							overflow: 'hidden',
 							whiteSpace: 'nowrap',
+							fontSize: "13px",
 						}}
 					>
 						{filename}
@@ -1226,7 +2436,7 @@ const Step2Component = () => {
 						/>
 					</label>
 				</Grid>
-				<Grid item xs={4} hidden={true} style={{ marginLeft: '0.5rem', marginTop: '0.5rem' }}>
+				<Grid item xs={3} hidden={true} style={{ paddingLeft: '0.2rem', paddingTop: '0.2rem' }}>
 					<Grid container direction='row'>
 						<label
 							className='form-control'
@@ -1259,14 +2469,28 @@ const Step2Component = () => {
 						)}
 					</Grid>
 				</Grid>
+				<Grid item xs={2} style={{ paddingLeft: '0.2rem', paddingTop: '0.2rem' }}>
+					<input type="number" value={orderPrecentage} onChange={(event:any) => setorderPrecentage(event.target.value.toString().trim()) } placeholder='Qty Ratio' className='form-control' style={{ fontSize: "13px", }}/>
+				</Grid>
 				
-				<Grid item xs={2} style={{ marginLeft: '0.5rem', marginTop: '0.5rem' }}>
+				<Grid item xs={3} style={{ paddingLeft: '0.2rem', paddingTop: '0.2rem' }}>
 					<Button
+						size={"medium"}
 						variant='contained'
 						color='secondary'
 						onClick={onInputSheetDownload}
 					>
-						Download
+						Download Input Sheet
+					</Button>
+				</Grid>
+				<Grid item xs={3} style={{ paddingLeft: '0.2rem', paddingTop: '0.2rem' }}>
+					<Button
+						size={"medium"}
+						variant='contained'
+						color='primary'
+						onClick={onErrorListDownload}
+					>
+						Validation Errors
 					</Button>
 				</Grid>
 			</Grid>
@@ -1342,7 +2566,7 @@ const Step2Component = () => {
 									fieldName='Year'
 								/>
 							</Grid>
-							<Grid item xs={2}>
+							<Grid hidden item xs={2}>
 								<DropDownComponent
 									selectedField={selectedInseam}
 									data={inseams}

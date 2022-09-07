@@ -1,6 +1,6 @@
 //Aritzia View
 import React, { useState, useContext, useEffect } from 'react';
-import PinkInputSheetContext from '../context/pinkContext';
+import PinkInputSheetContext from '../context/aritziaContext';
 import VsInputSheetContext from '../context/vsInputSheetContext';
 import {
 	Grid,
@@ -11,6 +11,7 @@ import {
 } from '@material-ui/core';
 import DropDownComponent from '../components/layout/dropdownComponent';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
+import { ToastContainer, toast } from 'react-toastify';
 import XLSX from 'xlsx';
 import {
 	inseams,
@@ -40,7 +41,6 @@ import ecvisionHeaderNames from '../Services/datasets/ecvisionNames';
 import { wscols } from '../inputSheetTemplate';
 import { COTblData_Aritzia, operationtable } from '../Services/datasets/common.d';
 import { SheetJSFT } from '../utils/sheetJSFT';
-import PackingItem from '../packingItems/PackingItem';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import {
 	getDeliveryMethodPink,
@@ -77,6 +77,7 @@ const Step2Component = () => {
 	const [requestDelDate, setrequestDelDate] = useState('');
 	const [selectedSeasonCode, setselectedSeasonCode] = useState<any>('');
 	const [selectedYearCode, setselectedYearCode] = useState<any>('');
+	const [selectedSizetemp, setselectedSizetemp] = useState<any>('');
 	const [selectedInseam, setselectedInseam] = useState('');
 	const [selectedPackingType, setSelectedPackingType] = useState('');
 	const [selectedM3BuyerDivision, setselectedM3BuyerDivision] = useState<any>('');
@@ -97,6 +98,7 @@ const Step2Component = () => {
 	const changeGarmentCom = (id) => setGarmentCompositions(id);
 	const changeSeasonalCode = (id) => setselectedSeasonCode(id);
 	const changeYearCode = (id) => setselectedYearCode(id);
+	const changeSizetemp = (id) => setselectedSizetemp(id);
 	const changeInseam = (id) => setselectedInseam(id);
 	const changePackingType = (id) => setSelectedPackingType(id);
 
@@ -170,13 +172,27 @@ const Step2Component = () => {
 		}
 	}
 
-	//read OLR file
+
+	//read OLR file New Code 2022/8/24
 	const onFileSelect = async (e) => {
+		if(pinkInputSheetContext.style.length < 1)
+		{
+			alert('Please Select/Sync Style and BOM.');
+			//toast.error('Please Select/Sync Style and BOM.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+			return;
+		}
+
+		if(selectedSizetemp.length < 1)
+		{
+			alert('Please Select Size Template.');
+			//toast.error('Please Select Size Template.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+			return;
+		}
+
+
 		const files = e.target.files;
 		// await setisFileReading(true);
 		await setFileName(files[0].name);
-
-		let file_name = files[0].name;
 
 		const reader = new FileReader();
 		const rABS = !!reader.readAsBinaryString;
@@ -186,132 +202,282 @@ const Step2Component = () => {
 			const wb = await XLSX.read(bstr, { type: rABS ? 'binary' : 'array',sheetStubs:true });
 			let first_sheet_name = wb.SheetNames[0];
 			const sheet = wb.Sheets[first_sheet_name];
-			
 
-			if (sheet) {
+			if (sheet)
+			{
 				let sheetStyles: any = [];
-				
-				let styleno = sheet['G2'].v;
-				let article = sheet['A2'].v;
-				let article_desc = sheet['B2'].v;
-				let country_date = convertExcelDateToJsLocaleDateString(sheet['N2'].v);
-				let ship_to = sheet['P2'].v;
-				let transport = sheet['R2'].v;
- 
-				let size_headers = {
-					size1:(typeof sheet['D4'].v === 'undefined') ? '' : sheet['D4'].v,
-					size2:(typeof sheet['E4'].v === 'undefined') ? '' : sheet['E4'].v,
-					size3:(typeof sheet['G4'].v === 'undefined') ? '' : sheet['G4'].v,
-					size4:(typeof sheet['I4'].v === 'undefined') ? '' : sheet['I4'].v,
-					size5:(typeof sheet['J4'].v === 'undefined') ? '' : sheet['J4'].v,
-					size6:(typeof sheet['K4'].v === 'undefined') ? '' : sheet['K4'].v,
-					size7:(typeof sheet['L4'].v === 'undefined') ? '' : sheet['L4'].v,
-					size8:(typeof sheet['M4'].v === 'undefined') ? '' : sheet['M4'].v,
-					size9:(typeof sheet['N4'].v === 'undefined') ? '' : sheet['N4'].v,
-					size10:(typeof sheet['O4'].v === 'undefined') ? '' : sheet['O4'].v,
-					size11:(typeof sheet['P4'].v === 'undefined') ? '' : sheet['P4'].v,
-					size12:(typeof sheet['Q4'].v === 'undefined') ? '' : sheet['Q4'].v,
-					size13:(typeof sheet['R4'].v === 'undefined') ? '' : sheet['R4'].v,
-					size14:(typeof sheet['S4'].v === 'undefined') ? '' : sheet['S4'].v,
+
+				const sheetData = XLSX.utils.sheet_to_json(sheet, {
+					header: 1,
+					blankrows: false,
+					defval: '',
+				});
+
+				const headerRow: any = sheetData.splice(0, 1)[0];
+				//console.log(sheetData.splice(0, 1))
+				for (let i in headerRow) {
+					headerRow[i] = headerRow[i].trim();
+				}
+
+				//Sheet Data Read
+
+				sheetData.forEach((line: any) => {
+					let obj: any = {};
+
+					for (let i in headerRow) {
+						obj[headerRow[i]] = line[i];
 					}
 
-					let pono = file_name.match("PO(.*)Release");
-					
+					if (obj["Vendor Article Number"].toString().includes(pinkInputSheetContext.style) && obj["Size"].trim() !== "") {
+						
+						//Not usefull
+						if (!isNaN(obj['H/O to Forwrder Date']) && obj['H/O to Forwrder Date'] !== '') {
+							obj['H/O to Forwrder Date'] = convertExcelDateToJsLocaleDateString( obj['H/O to Forwrder Date']);
+						}
 
-				for (let i = 5; i < 100; i++) {
+						if (!isNaN(obj['Original Ex Cty Date']) && obj['Original Ex Cty Date'] !== '') {
+							obj['Original Ex Cty Date'] = convertExcelDateToJsLocaleDateString(obj['Original Ex Cty Date']);
+						}
 
-					let value_color = (typeof sheet['A'+i.toString()].v === 'undefined') ? '' : sheet['A'+i.toString()].v;
+						if (!isNaN(obj['Delivery Date']) && obj['Delivery Date'] !== '') {
+							obj['Delivery Date'] = convertExcelDateToJsLocaleDateString( obj['Delivery Date']);
+						}
 
-					if (value_color !== '') {
+						sheetStyles.push(obj);
+					}
+				});
 
-						let shipcode = getShiptoAritzia(ship_to);
+				let sheetStyles_converted: any = [];
 
-						var size1=qtycalculate((typeof sheet['D'+i.toString()].v === 'undefined') ? '' : sheet['D'+i.toString()].v);
-						var size2=qtycalculate((typeof sheet['E'+i.toString()].v === 'undefined') ? '' : sheet['E'+i.toString()].v);
-						var size3=qtycalculate((typeof sheet['G'+i.toString()].v === 'undefined') ? '' : sheet['G'+i.toString()].v);
-						var size4=qtycalculate((typeof sheet['I'+i.toString()].v === 'undefined') ? '' : sheet['I'+i.toString()].v);
-						var size5=qtycalculate((typeof sheet['J'+i.toString()].v === 'undefined') ? '' : sheet['J'+i.toString()].v);
-						var size6=qtycalculate((typeof sheet['K'+i.toString()].v === 'undefined') ? '' : sheet['K'+i.toString()].v);
-						var size7=qtycalculate((typeof sheet['L'+i.toString()].v === 'undefined') ? '' : sheet['L'+i.toString()].v);
-						var size8=qtycalculate((typeof sheet['M'+i.toString()].v === 'undefined') ? '' : sheet['M'+i.toString()].v);
-						var size9=qtycalculate((typeof sheet['N'+i.toString()].v === 'undefined') ? '' : sheet['N'+i.toString()].v);
-						var size10=qtycalculate((typeof sheet['O'+i.toString()].v === 'undefined') ? '' : sheet['O'+i.toString()].v);
-						var size11=qtycalculate((typeof sheet['P'+i.toString()].v === 'undefined') ? '' : sheet['P'+i.toString()].v);
-						var size12=qtycalculate((typeof sheet['Q'+i.toString()].v === 'undefined') ? '' : sheet['Q'+i.toString()].v);
-						var size13=qtycalculate((typeof sheet['R'+i.toString()].v === 'undefined') ? '' : sheet['R'+i.toString()].v);
-						var size14=qtycalculate((typeof sheet['S'+i.toString()].v === 'undefined') ? '' : sheet['S'+i.toString()].v);
-
-						var size_total = qtycalculate((typeof sheet['T'+i.toString()].v === 'undefined') ? '' : sheet['T'+i.toString()].v);
-
-
-						sheetStyles.push({
-							id:i,
-							newline: 'False',
-							productionwarehouse: '',
-							destination: shipcode,
-							style:styleno,
-							rddc:'',
-							rddp:'',
-							fobd:'',
-							ndcd:'',
-							pcdd:'',
-							color:value_color,
-							vpono:pono[1],
-							cpono:pono[1],
-							deliverymethod:transport,
-							salesprice:'',
-							deliveryterm:'Free on Board-FOB',
-							packmethod:'Single pc packing-SIN',
-							zoption:'',
-							article:article,
-							description:article_desc,
-							warehouse:'',
-							countrydate:country_date,
-							shipto:shipcode,
-							modeoftransport:transport,
-							size1:size1,
-							size2:size2,
-							size3:size3,
-							size4:size4,
-							size5:size5,
-							size6:size6,
-							size7:size7,
-							size8:size8,
-							size9:size9,
-							size10:size10,
-							size11:size11,
-							size12:size12,
-							size13:size13,
-							size14:size14,
-							sizetotal:size_total,
-						});
-
+				const masterColorKeys = sheetStyles.filter((l) => String(l["Colour"]).trim()).map( (l) => String(l["Colour"]).trim() + String(l["Purchasing Document"]).trim() + String(l["Site"]).trim() );
+				
+				const uniquemasterColorKeys = [...new Set([...masterColorKeys])];
+				
+			uniquemasterColorKeys.forEach((code) => {
+				
+				const selectedColorLines = sheetStyles.filter( (l) => String(l["Colour"]).trim() + String(l["Purchasing Document"]).trim() + String(l["Site"]).trim() == code );
+				
+				function sizetemplate(sizeid)
+				{
+					if(selectedSizetemp === "COMMON")
+					{
+						if(sizeid === 1)
+						{
+							return '3XS';
+						}
+						else if(sizeid === 2)
+						{
+							return '2XS';
+						}
+						else if(sizeid === 3)
+						{
+							return 'XS';
+						}
+						else if(sizeid === 4)
+						{
+							return 'S';
+						}
+						else if(sizeid === 5)
+						{
+							return 'M';
+						}
+						else if(sizeid === 6)
+						{
+							return 'L';
+						}
+						else if(sizeid === 7)
+						{
+							return 'XL';
+						}
+						else if(sizeid === 8)
+						{
+							return '2XL';
+						}
+						else if(sizeid === 9)
+						{
+							return '3XL';
+						}
+						else if(sizeid === 10)
+						{
+							return '1X';
+						}
+						else if(sizeid === 11)
+						{
+							return '2X';
+						}
+						else if(sizeid === 12)
+						{
+							return '3X';
+						}
+						else
+						{
+							return '';
+						}
+					}
+					else if(selectedSizetemp === "NUMERIC")
+					{
+						if(sizeid === 1)
+						{
+							return '1';
+						}
+						else if(sizeid === 2)
+						{
+							return '2';
+						}
+						else if(sizeid === 3)
+						{
+							return '3';
+						}
+						else if(sizeid === 4)
+						{
+							return '4';
+						}
+						else
+						{
+							return '';
+						}
 					}
 					else
 					{
-						break;
+						return '';
 					}
-				  }
+				}
 
+				let temp_S1, temp_S2, temp_S3, temp_S4, temp_S5, temp_S6, temp_S7, temp_S8, temp_S9, temp_S10, temp_S11, temp_S12 = 0;
+				
+				selectedColorLines.forEach((l) => {
+					const tempSize = l["Size"].toUpperCase().trim();
 
-				//sheetData = OLR 
-
-				if (sheetStyles.length > 0) {
+					if(selectedSizetemp === "COMMON")
+					{
+						if (tempSize === sizetemplate(1)) {
+							temp_S1 = temp_S1 + l["Order Quantity"] != "" ? l["Order Quantity"] : 0;
+						} else if (tempSize === sizetemplate(2)) {
+							temp_S2 = temp_S2 + l["Order Quantity"] != "" ? l["Order Quantity"] : 0;
+						} else if (tempSize === sizetemplate(3)) {
+							temp_S3 = temp_S3 + l["Order Quantity"] != "" ? l["Order Quantity"] : 0;
+						} else if (tempSize === sizetemplate(4)) {
+							temp_S4 = temp_S4 + l["Order Quantity"] != "" ? l["Order Quantity"] : 0;
+						} else if (tempSize === sizetemplate(5)) {
+							temp_S5 = temp_S5 + l["Order Quantity"] != "" ? l["Order Quantity"] : 0;
+						} else if (tempSize === sizetemplate(6)) {
+							temp_S6 = temp_S6 + l["Order Quantity"] != "" ? l["Order Quantity"] : 0;
+						} else if (tempSize === sizetemplate(7)) {
+							temp_S7 = temp_S7 + l["Order Quantity"] != "" ? l["Order Quantity"] : 0;
+						} else if (tempSize === sizetemplate(8)) {
+							temp_S8 = temp_S8 + l["Order Quantity"] != "" ? l["Order Quantity"] : 0;
+						} else if (tempSize === sizetemplate(8)) {
+							temp_S9 = temp_S9 + l["Order Quantity"] != "" ? l["Order Quantity"] : 0;
+						} else if (tempSize === sizetemplate(8)) {
+							temp_S10 = temp_S10 + l["Order Quantity"] != "" ? l["Order Quantity"] : 0;
+						} else if (tempSize === sizetemplate(8)) {
+							temp_S11 = temp_S11 + l["Order Quantity"] != "" ? l["Order Quantity"] : 0;
+						} else if (tempSize === sizetemplate(8)) {
+							temp_S12 = temp_S12 + l["Order Quantity"] != "" ? l["Order Quantity"] : 0;
+						}
+						
+					}
+					else
+					{
+						if (tempSize === sizetemplate(1)) {
+							temp_S1 = temp_S1 + l["Order Quantity"] != "" ? l["Order Quantity"] : 0;
+						} else if (tempSize === sizetemplate(2)) {
+							temp_S2 = temp_S2 + l["Order Quantity"] != "" ? l["Order Quantity"] : 0;
+						} else if (tempSize === sizetemplate(3)) {
+							temp_S3 = temp_S3 + l["Order Quantity"] != "" ? l["Order Quantity"] : 0;
+						} else if (tempSize === sizetemplate(4)) {
+							temp_S4 = temp_S4 + l["Order Quantity"] != "" ? l["Order Quantity"] : 0;
+						} else if (tempSize === sizetemplate(5)) {
+							temp_S5 = temp_S5 + 0;
+						} else if (tempSize === sizetemplate(6)) {
+							temp_S6 = temp_S6 + 0;
+						} else if (tempSize === sizetemplate(7)) {
+							temp_S7 = temp_S7 + 0;
+						} else if (tempSize === sizetemplate(8)) {
+							temp_S8 = temp_S8 + 0;
+						} else if (tempSize === sizetemplate(8)) {
+							temp_S9 = temp_S9 + 0;
+						} else if (tempSize === sizetemplate(8)) {
+							temp_S10 = temp_S10 + 0;
+						} else if (tempSize === sizetemplate(8)) {
+							temp_S11 = temp_S11 + 0;
+						} else if (tempSize === sizetemplate(8)) {
+							temp_S12 = temp_S12 + 0;
+						}
+					}
+ 
 					
+				});
 
+					temp_S1 = temp_S1 > 0 ? Math.round((Number(temp_S1) / 100) * 104) : 0;
+					temp_S2 = temp_S2 > 0 ? Math.round((Number(temp_S2) / 100) * 104) : 0;
+					temp_S3 = temp_S3 > 0 ? Math.round((Number(temp_S3) / 100) * 104) : 0;
+					temp_S4 = temp_S4 > 0 ? Math.round((Number(temp_S4) / 100) * 104) : 0;
+					temp_S5 = temp_S5 > 0 ? Math.round((Number(temp_S5) / 100) * 104) : 0;
+					temp_S6 = temp_S6 > 0 ? Math.round((Number(temp_S6) / 100) * 104) : 0;
+					temp_S7 = temp_S7 > 0 ? Math.round((Number(temp_S7) / 100) * 104) : 0;
+					temp_S8 = temp_S8 > 0 ? Math.round((Number(temp_S8) / 100) * 104) : 0;
+					temp_S9 = temp_S9 > 0 ? Math.round((Number(temp_S9) / 100) * 104) : 0;
+					temp_S10 = temp_S10 > 0 ? Math.round((Number(temp_S10) / 100) * 104) : 0;
+					temp_S11 = temp_S11 > 0 ? Math.round((Number(temp_S11) / 100) * 104) : 0;
+					temp_S12 = temp_S12 > 0 ? Math.round((Number(temp_S12) / 100) * 104) : 0;
+
+				const x_row = selectedColorLines[0];
+
+				sheetStyles_converted.push({
+					id:String(x_row["Colour"]).trim() + String(x_row["Purchasing Document"]).trim() + String(x_row["Site"]).trim(),
+					newline: 'False',
+					warehouse: '',
+					destination: x_row['Site'],
+					rddc:'',
+					rddp:'',
+					fobd:'',
+					ndcd:'',
+					pcdd:'',
+					color:String(x_row["Colour"]).trim(),
+					style:x_row['Vendor Article Number'],
+					vpono:x_row['Purchasing Document'],
+					cpono:x_row['Purchasing Document'],
+					deliverymethod:x_row['DMoT Description'],
+					salesprice:'',
+					deliveryterm:'Free on Board-FOB',
+					packmethod:'Single pc packing-SIN',
+					zoption:'',
+					SETSIZE_S1:temp_S1,
+					SETSIZE_S2:temp_S2,
+					SETSIZE_S3:temp_S3,
+					SETSIZE_S4:temp_S4,
+					SETSIZE_S5:temp_S5,
+					SETSIZE_S6:temp_S6,
+					SETSIZE_S7:temp_S7,
+					SETSIZE_S8:temp_S8,
+					SETSIZE_S9:temp_S9,
+					SETSIZE_S10:temp_S10,
+					SETSIZE_S11:temp_S11,
+					SETSIZE_S12:temp_S12,
+					sizetotal: temp_S1 + temp_S2 + temp_S3 + temp_S4 + temp_S5 + 
+					temp_S6 + temp_S7 + temp_S8 + temp_S9 + temp_S10 + temp_S11 + temp_S12,	
+				});
+
+				console.log(sheetStyles_converted);
+
+			});
+
+				if (sheetStyles_converted.length > 0) {
+					
 					//Get season based on season code (OLR)
-					const seasonName = getSeasonAritzia(styleno);
+					const seasonName = getSeasonAritzia(pinkInputSheetContext.style);
 
 					let uniqueStylesWithData = {
-						styleNo: styleno,
+						styleNo: pinkInputSheetContext.style,
 						VERSION: '',
 						itemGroup: seasonName,
 						season: seasonName,
 						// purchasingGroup: shipDateFilteredStylesData[0]['PURCHASINGGROUP'],
 						purchasingGroup: '',
 						// lines: shipDateFilteredStylesData,
-						newLines: sheetStyles,
-						sizeheaders:size_headers,
+						lines: sheetStyles,
+						newLines:sheetStyles_converted,
 						wareHouse: '',
 						destination: '',
 						deliveryMethod: '',
@@ -320,18 +486,30 @@ const Step2Component = () => {
 						packMethod: '',
 						buyerDivision: '',
 						leadFactory: '',
-						MASTSTYLEDESC: article_desc
+						MASTSTYLEDESC: ''
 					};
-					setSelectedStyleData(uniqueStylesWithData);
+					
+					//setSelectedStyleData(uniqueStylesWithData);
 					pinkInputSheetContext.changeGenericNo('');
+
+					setSelectedStyleData(uniqueStylesWithData);
+					alert(sheetStyles.length.toString() +' No of Related Rows Found in PO File.');
+					//toast.info(sheetStyles.length.toString() +' No of Related Rows Found in PO File.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+					setFileName("Select PO File");
 					
 				} else {
 					alert('No Style ' + pinkInputSheetContext.style);
+					//toast.info('No Style ' + pinkInputSheetContext.style, { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+					setFileName("Select PO File");
 				}
+				
 			} else {
-				alert('No Sheets in Order Report');
+				alert('No Sheets in PO File');
+				//toast.error('No Sheets in PO File', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+				
 			}
 		};
+
 		if (rABS) reader.readAsBinaryString(files[0]);
 		else reader.readAsArrayBuffer(files[0]);
 	};
@@ -348,6 +526,7 @@ const Step2Component = () => {
 		if(requestDelDate.length === 0)
 		{
 			alert('Please Select Date?');
+			//toast.error('Please Select Date?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
@@ -379,6 +558,7 @@ const Step2Component = () => {
 		if(requestDelDate.length === 0)
 		{
 			alert('Please Select Date?');
+			//toast.error('Please Select Date?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
@@ -411,8 +591,9 @@ const Step2Component = () => {
 		}
 		else
 		{
-			
 			alert('Please Select warehouse and data.');
+			//toast.error('Please Select warehouse and data.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+			
 		}
 
 	};
@@ -437,6 +618,7 @@ const Step2Component = () => {
 		if(selectedWareHouse.length === 0)
 		{
 			alert('Please Select Warehouse?');
+			//toast.error('Please Select Warehouse?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
@@ -450,9 +632,8 @@ const Step2Component = () => {
 			});
 			setSelectedStyleData(cselectedStyleData);
 
-			
-
 			alert('All Rows updated.');
+			//toast.success('All Rows updated.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 
 	};
  
@@ -460,6 +641,7 @@ const Step2Component = () => {
 		if(requestDelDate.length === 0)
 		{
 			alert('Please Select Date?');
+			//toast.error('Please Select Date?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
@@ -484,14 +666,15 @@ const Step2Component = () => {
 		});
 		setSelectedStyleData(cselectedStyleData);
 		
-
-			alert('All Rows updated.');
+		alert('All Rows updated.');
+		//toast.success('All Rows updated.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 	};
 
 	const onAddDelDatePlannerClicked = async () => {
 		if(requestDelDate.length === 0)
 		{
 			alert('Please Select Date?');
+			//toast.error('Please Select Date?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
@@ -502,9 +685,8 @@ const Step2Component = () => {
 			line.rddp = requestDelDate;
 		});
 		setSelectedStyleData(cselectedStyleData);
-		
-
-			alert('All Rows updated.');
+		alert('All Rows updated.');
+		//toast.success('All Rows updated.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 	};
 
 	const onInputSheetDownload = async () => {
@@ -512,42 +694,49 @@ const Step2Component = () => {
 		if(selectedMerchandiser.length === 0)
 		{
 			alert('Please Select Merchandiser?');
+			//toast.error('Please Select Merchandiser?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 		
 		if(selectedPlanner.length === 0)
 		{
 			alert('Please Select Planner?');
+			//toast.error('Please Select Planner?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
 		if(selectedLeadFactories.length === 0)
 		{
 			alert('Please Select Lead factory?');
+			//toast.error('Please Select Lead factory?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
 		if(selectedGarmentCompositions.length === 0)
 		{
 			alert('Please Select Garment Composition?');
+			//toast.error('Please Select Garment Composition?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
 		if(selectedBuyerDivisions.length === 0)
 		{
 			alert('Please Select Buyer Division?');
+			//toast.error('Please Select Buyer Division?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
 		if(selectedM3BuyerDivision.length === 0)
 		{
 			alert('Please Select M3 Buyer Division?');
+			//toast.error('Please Select M3 Buyer Division?', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
 		if(selectedStyleData.styleNo.length === 0)
 		{
 			alert('Please Select BOM.');
+			//toast.error('Please Select BOM.', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 			return;
 		}
 
@@ -647,7 +836,9 @@ const Step2Component = () => {
 
 		//Loop through OLR lines
 		for (let i = 0; i < selectedStyleData.newLines.length; i++) {
+			
 			const line = selectedStyleData.newLines[i];
+			//console.log(line);
 			COColors.push(line.color.toString());
 
 			//Get matching color from BOM Garment Color(last 4 chars) based on Color code(last 4 chars) in OLR
@@ -680,18 +871,20 @@ const Step2Component = () => {
 				//(item: any) => item.Garment.toUpperCase() === newColor.toUpperCase()
 			//);
 
-			//Create CO Table lines
+			if(selectedSizetemp === "COMMON")
+			{
+				//Create CO Table lines
 			const rowToAdd = [
 				'FALSE', // added NewLine into the sheet
 				line.warehouse,
 				line.destination,
+				line.style,
 				new Date(line.rddc),
 				new Date(line.rddp),
 				new Date(line.fobd), //FOB Date
 				new Date(line.ndcd),
 				new Date(line.pcdd), //PCDDate
 				(selectedInseam.length > 0) ? selectedInseam +'-'+ line.color : line.color,
-				line.style,
 				line.vpono,
 				line.cpono,
 				line.deliverymethod,//'DeliveryMethod *'
@@ -700,23 +893,53 @@ const Step2Component = () => {
 				line.packmethod,
 				line.zoption,
 				line.sizetotal,
-				line.size1,
-				line.size2,
-				line.size3,
-				line.size4,
-				line.size5,
-				line.size6,
-				line.size7,
-				line.size8,
-				line.size9,
-				line.size10,
-				line.size11,
-				line.size12,
-				line.size13,
-				line.size14,
+				line.SETSIZE_S1,
+				line.SETSIZE_S2,
+				line.SETSIZE_S3,
+				line.SETSIZE_S4,
+				line.SETSIZE_S5,
+				line.SETSIZE_S6,
+				line.SETSIZE_S7,
+				line.SETSIZE_S8,
+				line.SETSIZE_S9,
+				line.SETSIZE_S10,
+				line.SETSIZE_S11,
+				line.SETSIZE_S12,
 				''//CO
-			];
-			template.push(rowToAdd);
+				];
+				template.push(rowToAdd);
+			}
+			else if(selectedSizetemp === "NUMERIC")
+			{
+				const rowToAdd = [
+					'FALSE', // added NewLine into the sheet
+					line.warehouse,
+					line.destination,
+					line.style,
+					new Date(line.rddc),
+					new Date(line.rddp),
+					new Date(line.fobd), //FOB Date
+					new Date(line.ndcd),
+					new Date(line.pcdd), //PCDDate
+					(selectedInseam.length > 0) ? selectedInseam +'-'+ line.color : line.color,
+					line.vpono,
+					line.cpono,
+					line.deliverymethod,//'DeliveryMethod *'
+					parseFloat('0'),
+					line.deliveryterm,//'DeliveryTerm *'
+					line.packmethod,
+					line.zoption,
+					line.sizetotal,
+					line.SETSIZE_S1,
+					line.SETSIZE_S2,
+					line.SETSIZE_S3,
+					line.SETSIZE_S4,
+					''//CO
+					];
+					template.push(rowToAdd);
+			}
+
+			
 		}
 
 		// Change sizes postfix according to Inseam
@@ -732,47 +955,30 @@ const Step2Component = () => {
 			}
 		}
 
-		const sizeIndex1 = template[14].findIndex(i => i === selectedStyleData.sizeheaders.size1);
-		if (sizeIndex1 > -1) template[14][sizeIndex1] = (selectedStyleData.sizeheaders.size1 === '') ? '' : selectedStyleData.sizeheaders.size1 + getinseamwithsize(selectedInseam);
-
-		const sizeIndex2 = template[14].findIndex(i => i === selectedStyleData.sizeheaders.size2);
-		if (sizeIndex2 > -1) template[14][sizeIndex2] = (selectedStyleData.sizeheaders.size2 === '') ? '' : selectedStyleData.sizeheaders.size2 + getinseamwithsize(selectedInseam);
-
-		const sizeIndex3 = template[14].findIndex(i => i === selectedStyleData.sizeheaders.size3);
-		if (sizeIndex3 > -1) template[14][sizeIndex3] = (selectedStyleData.sizeheaders.size3 === '') ? '' : selectedStyleData.sizeheaders.size3 + getinseamwithsize(selectedInseam);
-
-		const sizeIndex4 = template[14].findIndex(i => i === selectedStyleData.sizeheaders.size4);
-		if (sizeIndex4 > -1) template[14][sizeIndex4] = (selectedStyleData.sizeheaders.size4 === '') ? '' : selectedStyleData.sizeheaders.size4 + getinseamwithsize(selectedInseam);
-
-		const sizeIndex5 = template[14].findIndex(i => i === selectedStyleData.sizeheaders.size5);
-		if (sizeIndex5 > -1) template[14][sizeIndex5] = (selectedStyleData.sizeheaders.size5 === '') ? '' : selectedStyleData.sizeheaders.size5 + getinseamwithsize(selectedInseam);
-
-		const sizeIndex6 = template[14].findIndex(i => i === selectedStyleData.sizeheaders.size6);
-		if (sizeIndex6 > -1) template[14][sizeIndex6] = (selectedStyleData.sizeheaders.size6 === '') ? '' : selectedStyleData.sizeheaders.size6 + getinseamwithsize(selectedInseam);
-
-		const sizeIndex7 = template[14].findIndex(i => i === selectedStyleData.sizeheaders.size7);
-		if (sizeIndex7 > -1) template[14][sizeIndex7] = (selectedStyleData.sizeheaders.size7 === '') ? '' : selectedStyleData.sizeheaders.size7 + getinseamwithsize(selectedInseam);
-
-		const sizeIndex8 = template[14].findIndex(i => i === selectedStyleData.sizeheaders.size8);
-		if (sizeIndex8 > -1) template[14][sizeIndex8] = (selectedStyleData.sizeheaders.size8 === '') ? '' : selectedStyleData.sizeheaders.size8 + getinseamwithsize(selectedInseam);
-
-		const sizeIndex9 = template[14].findIndex(i => i === selectedStyleData.sizeheaders.size9);
-		if (sizeIndex9 > -1) template[14][sizeIndex9] = (selectedStyleData.sizeheaders.size9 === '') ? '' : selectedStyleData.sizeheaders.size9 + getinseamwithsize(selectedInseam);
-
-		const sizeIndex10 = template[14].findIndex(i => i === selectedStyleData.sizeheaders.size10);
-		if (sizeIndex10 > -1) template[14][sizeIndex10] = (selectedStyleData.sizeheaders.size10 === '') ? '' : selectedStyleData.sizeheaders.size10 + getinseamwithsize(selectedInseam);
-
-		const sizeIndex11 = template[14].findIndex(i => i === selectedStyleData.sizeheaders.size11);
-		if (sizeIndex11 > -1) template[14][sizeIndex11] = (selectedStyleData.sizeheaders.size11 === '') ? '' : selectedStyleData.sizeheaders.size11 + getinseamwithsize(selectedInseam);
-
-		const sizeIndex12 = template[14].findIndex(i => i === selectedStyleData.sizeheaders.size12);
-		if (sizeIndex12 > -1) template[14][sizeIndex12] = (selectedStyleData.sizeheaders.size12 === '') ? '' : selectedStyleData.sizeheaders.size12 + getinseamwithsize(selectedInseam);
-
-		const sizeIndex13 = template[14].findIndex(i => i === selectedStyleData.sizeheaders.size13);
-		if (sizeIndex13 > -1) template[14][sizeIndex13] = (selectedStyleData.sizeheaders.size13 === '') ? '' : selectedStyleData.sizeheaders.size13 + getinseamwithsize(selectedInseam);
-
-		const sizeIndex14 = template[14].findIndex(i => i === selectedStyleData.sizeheaders.size14);
-		if (sizeIndex14 > -1) template[14][sizeIndex14] = (selectedStyleData.sizeheaders.size14 === '') ? '' : selectedStyleData.sizeheaders.size14 + getinseamwithsize(selectedInseam);
+		if(selectedSizetemp === "COMMON")
+		{
+			template[14][18] = ' 3XS' + getinseamwithsize(selectedInseam);
+			template[14][19] = ' 2XS' + getinseamwithsize(selectedInseam);
+			template[14][20] = ' XS' + getinseamwithsize(selectedInseam);
+			template[14][21] = ' S' + getinseamwithsize(selectedInseam);
+			template[14][22] = ' M' + getinseamwithsize(selectedInseam);
+			template[14][23] = ' L' + getinseamwithsize(selectedInseam);
+			template[14][24] = ' XL' + getinseamwithsize(selectedInseam);
+			template[14][25] = ' 2XL' + getinseamwithsize(selectedInseam);
+			template[14][26] = ' 3XL' + getinseamwithsize(selectedInseam);
+			template[14][27] = ' 1X' + getinseamwithsize(selectedInseam);
+			template[14][28] = ' 2X' + getinseamwithsize(selectedInseam);
+			template[14][29] = ' 3X' + getinseamwithsize(selectedInseam);
+			template[14][30] = ' CO Number';
+		}
+		else if(selectedSizetemp === "NUMERIC")
+		{
+			template[14][18] = ' 1' + getinseamwithsize(selectedInseam);
+			template[14][19] = ' 2' + getinseamwithsize(selectedInseam);
+			template[14][20] = ' 3' + getinseamwithsize(selectedInseam);
+			template[14][21] = ' 4' + getinseamwithsize(selectedInseam);
+			template[14][22] = ' CO Number';
+		}
 
 		//BOM removing colors not in CO and Thread lines & Dummy in PLM
 		const filteredBOM: any[] = pinkInputSheetContext.BOM.filter((row: any) => {
@@ -1118,7 +1324,9 @@ const Step2Component = () => {
 			const wb = XLSX.read(bstr, { type: rABS ? 'binary' : 'array' });
 			const dataSheet = wb.Sheets['Sheet1'];
 			if (!dataSheet || dataSheet == undefined) {
+
 				alert('Sheet1 Not Found');
+				//toast.error('Sheet1 Not Found', { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
 				setThreadStatus(null);
 				return;
 			}
@@ -1136,9 +1344,10 @@ const Step2Component = () => {
 
 			//Alert if no matching thread lines with the Generic No
 			if (threadSummaryData.length < 1) {
-				alert(
-					`Genrice No. ${pinkInputSheetContext.genericNo}, not found in Thread Summary Sheet.`
-				);
+				
+				alert(`Genrice No. ${pinkInputSheetContext.genericNo}, not found in Thread Summary Sheet.`);
+				//toast.error(`Genrice No. ${pinkInputSheetContext.genericNo}, not found in Thread Summary Sheet.`, { position: "top-right", autoClose: 3000,closeOnClick: true, pauseOnHover: true,});
+				
 				setThreadStatus(null);
 				// setdownloadBtnStatus(true);
 				return;
@@ -1169,6 +1378,19 @@ const Step2Component = () => {
 	return (
 		<React.Fragment>
 			<Grid container direction='row' justify='space-evenly'>
+			<ToastContainer />
+			<Grid item xs={2} md={2} style={{ marginTop: '0.2rem' }}>
+					<DropDownComponent
+						selectedField={selectedSizetemp}
+						data={[
+							{ id: 'COMMON', name: 'COMMON' },
+							{ id: 'NUMERIC', name: 'NUMERIC' },
+						]}
+						onSelectChange={changeSizetemp}
+						fieldName='Size Template'
+						size={"small"}
+					/>
+				</Grid>
 				<Grid item xs={6} style={{ marginTop: '0.5rem' }}>
 					<label
 						className='form-control'
